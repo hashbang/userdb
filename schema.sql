@@ -54,7 +54,7 @@ create table "aux_groups" (
 -- prevent creation/update of a user if the number of users
 -- in the group 'users' that have that host
 -- is equal to the maxUsers for that host
-insert into table "group" (name, id) values ('users', 3000);
+insert into "group" (name, gid) values ('users', 3000);
 create function check_max_users() returns trigger 
     language plpgsql as $$
     begin 

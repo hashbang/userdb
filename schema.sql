@@ -54,3 +54,10 @@ create function check_max_users() returns trigger
 create constraint trigger max_users
     after insert or update on passwd
     for each row execute procedure check_max_users();
+
+-- create role for creating new users
+-- grant only rights to add new users
+create role "create_users";
+grant insert on table "group",passwd to "create_users";
+grant select on table "hosts" to "create_users";
+grant usage on sequence user_id to "create_users";

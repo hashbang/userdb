@@ -1,8 +1,7 @@
 language: bash
 
-before_install:
-    - sudo apt-get update -qq
-    - sudo apt-get install -qq postgresql postgresql-contrib
+addons:
+  postgresql: "9.4"
 
 script:
     - make test

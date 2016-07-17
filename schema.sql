@@ -4,10 +4,12 @@
 CREATE TABLE "hosts" (
   "id" serial PRIMARY KEY,
   "name" text UNIQUE NOT NULL,
-  "data" jsonb -- extra data added in the stats answer
-               -- conforms to the host_data.yaml schema
+  "location" text,
+  -- 4326 is the EPSG standard for lat/lon
+  "coordinates" geography (point, 4326),
+  "maxUsers" integer check (maxUsers >= 0),
+  "ips" inet[] not null
 )
-
 
 -- data for NSS' passwd
 -- there is an implicit primary group for each user
@@ -17,18 +19,23 @@ CREATE DOMAIN username_t varchar(31) CHECK (
   VALUE ~ '^[a-z][a-z0-9]+$'
 );
 
-CREATE TABLE "passwd" (
-  "uid" integer PRIMARY KEY MINVALUE 1000 DEFAULT nextval('user_id'),
-  "name" username_t UNIQUE NOT NULL,
-  "host" integer NOT NULL REFERENCES hosts (id),
-  "homedir" text NOT NULL,
-  "data" jsonb  -- conforms to the user_data.yaml schema
-);
-
 -- auxiliary groups
 CREATE TABLE "group" (
   "gid" integer PRIMARY KEY MAXVALUE 999,
   "name" username_t UNIQUE NOT NULL,
+);
+
+CREATE TABLE "passwd" (
+  "name" username_t UNIQUE NOT NULL,
+  "uid" integer PRIMARY KEY MINVALUE 1000 DEFAULT nextval('user_id'),
+  "gid" integer not null references "group" (gid)
+    on update cascade on delete cascade,
+  "gecos" text, 
+  -- Every user must have a default host for ssh/mail routing
+  "host" integer not null REFERENCES hosts (id),
+  -- This could be any folder as we could also have bot users like 'git'
+  "homeDir" text NOT NULL,
+  "sshKeys" text[] not null,
 );
 
 CREATE TABLE "aux_groups" (

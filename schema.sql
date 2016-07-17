@@ -25,6 +25,8 @@ CREATE TABLE "passwd" (
   "data" jsonb  -- conforms to the user_data.yaml schema
 );
 
+alter sequence user_id owned by passwd.uid;
+
 -- auxiliary groups
 CREATE TABLE "group" (
   "gid" integer PRIMARY KEY CHECK(gid < 1000),

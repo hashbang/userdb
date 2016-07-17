@@ -4,10 +4,10 @@
 CREATE TABLE "hosts" (
   "id" serial PRIMARY KEY,
   "name" text UNIQUE NOT NULL,
+  "maxusers" integer CHECK(maxusers >= 0),
   "data" jsonb -- extra data added in the stats answer
                -- conforms to the host_data.yaml schema
 );
-
 
 -- data for NSS' passwd
 -- there is an implicit primary group for each user
@@ -36,3 +36,19 @@ CREATE TABLE "aux_groups" (
   "gid" int4 NOT NULL REFERENCES "group" (gid) ON DELETE CASCADE,
   PRIMARY KEY ("uid", "gid")
 );
+
+-- prevent creation/update of a user if the number of users
+-- in the group 'users' that have that host
+-- is equal to the maxUsers for that host
+create function check_max_users() returns trigger
+    language plpgsql as $$
+    begin
+	if (tg_op = 'INSERT' or old.host <> new.host) and
+	   (select count(*) from passwd where passwd.host = new.host) >= (select "maxusers" from hosts where hosts.id = new.host) then
+	    raise foreign_key_violation using message = 'maxUsers reached for host: '||new.host;
+	end if;
+	return new;
+    end $$;
+create constraint trigger max_users
+    after insert or update on passwd
+    for each row execute procedure check_max_users();

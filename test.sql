@@ -10,7 +10,8 @@ BEGIN
             "lat": 0,
             "lon": 0
         },
-        "location": "Undisclosed location"
+        "location": "Undisclosed location",
+        "maxUsers": 1000
      }'::jsonb) returning name INTO host_name;
     SELECT * FROM assert.is_equal(host_name,'testbox') INTO message, result;
 

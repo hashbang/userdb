@@ -6,7 +6,7 @@ CREATE TABLE "hosts" (
   "name" text UNIQUE NOT NULL,
   "data" jsonb -- extra data added in the stats answer
                -- conforms to the host_data.yaml schema
-)
+);
 
 
 -- data for NSS' passwd
@@ -18,7 +18,7 @@ CREATE DOMAIN username_t varchar(31) CHECK (
 );
 
 CREATE TABLE "passwd" (
-  "uid" integer PRIMARY KEY MINVALUE 1000 DEFAULT nextval('user_id'),
+  "uid" integer PRIMARY KEY CHECK(uid >= 1000) DEFAULT nextval('user_id'),
   "name" username_t UNIQUE NOT NULL,
   "host" integer NOT NULL REFERENCES hosts (id),
   "homedir" text NOT NULL,
@@ -27,12 +27,12 @@ CREATE TABLE "passwd" (
 
 -- auxiliary groups
 CREATE TABLE "group" (
-  "gid" integer PRIMARY KEY MAXVALUE 999,
-  "name" username_t UNIQUE NOT NULL,
+  "gid" integer PRIMARY KEY CHECK(gid < 1000),
+  "name" username_t UNIQUE NOT NULL
 );
 
 CREATE TABLE "aux_groups" (
-  "uid" int4 NOT NULL REFERENCES passwd (uid) ON DELETE CASCADE,
-  "gid" int4 NOT NULL REFERENCES group  (gid) ON DELETE CASCADE,
-  PRIMARY KEY ("uid", "gid"),
+  "uid" int4 NOT NULL REFERENCES passwd  (uid) ON DELETE CASCADE,
+  "gid" int4 NOT NULL REFERENCES "group" (gid) ON DELETE CASCADE,
+  PRIMARY KEY ("uid", "gid")
 );

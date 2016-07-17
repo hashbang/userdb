@@ -1,6 +1,71 @@
-# #! user database — Requirements
+# #! User Database #
 
-This document describes the requirements for our user database.
+<http://github.com/hashbang/userdb>
+
+[![IRC][irc-badge]][irc]
+[![PostgreSQL][postgresql-badge]][postgresql]
+[![TravisCI][travis-badge]][travis-status]
+[![License][license-badge]][license]
+
+[postgresql-badge]: https://img.shields.io/badge/postgresql-9.4-blue.svg
+[postgresql]: https://www.postgresql.org/docs/9.4/static/index.html
+[irc-badge]: https://img.shields.io/badge/irc%20channel-%23%21%20on%20hashbang-blue.svg
+[irc]: https://chat.hashbang.sh/
+[travis-badge]: https://travis-ci.org/hashbang/userdb.svg?branch=master
+[travis-status]: https://travis-ci.org/hashbang/userdb
+[license-badge]: https://img.shields.io/github/license/hashbang/userdb.svg?maxAge=2592000
+[license-badge]: https://github.com/hashbang/userdb/LICENSE.md
+
+# About
+
+This repo contains the schema and requirements for our PostgreSQL user
+database.
+
+# Requirements
+
+- PostgreSQL 9.4+
+
+# Installation
+
+This will setup userdb as 'userdb' database on local PostgreSQL.
+
+```
+make install
+```
+
+# Development
+
+Drops you into a fresh postgresql shell with latest schema:
+
+```
+make develop
+```
+
+# Testing
+
+```
+make test
+```
+
+# Contribution 
+
+Please consider the following when submitting contributions:
+- [SQL Style Guide][1] is followed
+- [Design Requirements][2] is observed or updated as needed.
+- Use Pull Requests for all changes
+- Tests must pass
+
+Feel free to discuss ideas with us on IRC to get help contributing. We are 
+totally happy with something taking longer to do, if you learn something
+in the process.
+
+[1]: https://github.com/hashbang/userdb/DESIGN.md
+[2]: https://github.com/hashbang/userdb/STYLEGUIDE.md
+
+
+# Rationale
+
+This document describes the requirements for our PostgreSQL user database.
 Understanding the design goals is an important part of understanding the
 engineering trade-offs made there.
 

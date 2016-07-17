@@ -50,3 +50,27 @@ create table "aux_groups" (
   "gid" int4 not null references "group"  (gid) on delete cascade,
   primary key ("uid", "gid")
 );
+
+-- prevent creation/update of a user if the number of users
+-- in the group 'users' that have that host
+-- is equal to the maxUsers for that host
+insert into table "group" (name, id) values ('users', 3000);
+create function check_max_users() returns trigger 
+    language plpgsql as $$
+    begin 
+        if (tg_op = 'INSERT' or old.host <> new.host) and
+           (select count(*) from passwd inner join aux_groups on (passwd.uid = aux_groups.uid and aux_groups.gid = 3000 and passwd.host = new.host)) >= (select maxUsers from hosts where hosts.id = new.host) then
+            raise foreign_key_violation using message = 'maxUsers reached for host: '||new.host;
+        end if;
+        return new;
+    end $$;
+create constraint trigger max_users 
+    after insert or update on passwd 
+    for each row execute procedure check_max_users();
+
+-- create role for creating new users
+-- grant only rights to add new users
+create role "write_users";
+grant insert on table "group",passwd to "write_users";
+grant select on table "hosts" to "write_users";
+grant usage on sequence user_id,group_id to "write_users";

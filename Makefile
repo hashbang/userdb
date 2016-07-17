@@ -2,7 +2,10 @@ test:
 	-(rm -rf /tmp/pg_test)
 	-(git clone https://github.com/mixerp/plpgunit /tmp/plpgunit)
 	initdb -D /tmp/pg_test
-	pg_ctl -D /tmp/pg_test start -w -o "-c unix_socket_directories=/tmp/pg_test"
+	pg_ctl -D /tmp/pg_test start -w -o " \
+		-c unix_socket_directories=/tmp/pg_test \
+		-c listen_addresses='' \
+	"
 	-( psql -v ON_ERROR_STOP=1 -h /tmp/pg_test -d postgres \
 		-f /tmp/plpgunit/install/1.install-unit-test.sql && \
 	   psql -v ON_ERROR_STOP=1 -h /tmp/pg_test -d postgres -f schema.sql &&\

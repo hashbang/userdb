@@ -1,152 +1,16 @@
-# #! User Database #
+# #! User Database -- Design document #
 
-<http://github.com/hashbang/userdb>
-
-[![IRC][irc-badge]][irc]
-[![PostgreSQL][postgresql-badge]][postgresql]
-[![TravisCI][travis-badge]][travis-status]
-[![License][license-badge]][license]
-
-[postgresql-badge]: https://img.shields.io/badge/postgresql-9.4-blue.svg
-[postgresql]: https://www.postgresql.org/docs/9.4/static/index.html
-[irc-badge]: https://img.shields.io/badge/irc%20channel-%23%21%20on%20hashbang-blue.svg
-[irc]: https://chat.hashbang.sh/
-[travis-badge]: https://travis-ci.org/hashbang/userdb.svg?branch=master
-[travis-status]: https://travis-ci.org/hashbang/userdb
-[license-badge]: https://img.shields.io/github/license/hashbang/userdb.svg?maxAge=2592000
-[license-badge]: https://github.com/hashbang/userdb/LICENSE.md
+See <http://github.com/hashbang/userdb>
 
 # About
 
-This repo contains the schema and requirements for our PostgreSQL user
-database.
+This document describes the design of our PostgreSQL user database.
 
-# Requirements
+Understanding the design goals and requirements is an important part of
+understanding the engineering trade-offs made there, so please read read
+the [requirements](REQUIREMENTS.md) first.
 
-- PostgreSQL 9.4+
-
-# Installation
-
-This will setup userdb as 'userdb' database on local PostgreSQL.
-
-```
-make install
-```
-
-# Development
-
-Drops you into a fresh postgresql shell with latest schema:
-
-```
-make develop
-```
-
-# Testing
-
-```
-make test
-```
-
-# Contribution 
-
-Please consider the following when submitting contributions:
-- [SQL Style Guide][1] is followed
-- [Design Requirements][2] is observed or updated as needed.
-- Use Pull Requests for all changes
-- Tests must pass
-
-Feel free to discuss ideas with us on IRC to get help contributing. We are 
-totally happy with something taking longer to do, if you learn something
-in the process.
-
-[1]: https://github.com/hashbang/userdb/DESIGN.md
-[2]: https://github.com/hashbang/userdb/STYLEGUIDE.md
-
-
-# Rationale
-
-This document describes the requirements for our PostgreSQL user database.
-Understanding the design goals is an important part of understanding the
-engineering trade-offs made there.
-
-## Data
-
-A user has several kinds of associated data:
-- relational data, which might be involved in `WHERE` conditions or `JOIN`s:
-  `uid`, `gid`, `username` and `host`;
-- non-relational data: SSH keys, full name, preferred shell, ...
-- users may add additional data without specific cooperation from the #! admins,
-  facilitating the construction of new, non-core services
-  (finger, GPG key discovery, ...)
-
-Each user has a primary group, that shares the same id and name.
-
-Administrators may define auxiliary groups (such as `adm` or `sudo`)
-and any user can belong to any number of auxiliary groups.
-
-Lastly, the DB needs to keep track of per-server information, namely its
-`hostname`, IP address and location.  This is in part intended for consumption
-by the [stats API](https://hashbang.sh/server/stats).
-
-
-## Properties
-
-### Immediate
-
-These requirements **must** be achieved before deployment:
-
-- Availability
-  - Users do not lose access to the shell servers if part of the infra goes down.
-  - Loss of any part of the infrastructure is recoverable with limited data loss.
-
-- Consistency
-  - Changes in the userdb must occur in some coherent ordering, and reads must
-	respect it.  In particular, it is not possible to observe partial updates.
-  - The data held in the database must be internally coherent: for instance,
-	a user may not belong to a group that does not exist.
-
-- Maintainability
-  - Avoid custom implementations of standard modules (NSS, PAM, ...)
-	whenever possible and reasonable.
-  - Minimize the amount of components that have knowledge of the database
-	implementation, and make the others rely on a more abstract API.
-
-- Privilege separation
-  - All data must be non-readable, non-writeable, by default.
-  - Each service/component must have the least possible access (read, write, ...),
-	restricted to the data it needs to manipulate.
-
-- No-downtime deployment
-  - The initial deployment must be achievable without disrupting core services
-	(shell access, IRC, ...), and must minimize the disruption to auxiliary
-	services (mail, ...).
-  - Any later update/maintainance of the system must be achievable without
-	disrupting read-availability of the user DB.  Having a short window where
-	users cannot edit their records or signup is acceptable.
-
-
-### Long-term
-
-These requirements **must** be *achievable*:
-
-- Privilege separation
-  - Unprivileged `hashbangctl` can only modify the user's own data
-- Remote service authentication: local (shell) users should be able to authenticate
-  transparently and securely to remote (#!) services (SMTP, IRC, ...).
-
-
-## Services
-
-The following services need to interact with the user DB:
-- OpenSSH, through `AuthorizedKeysCommand`;
-- `mail.hashbang.sh` needs to extract host info for mail routing;
-- `hashbang.sh` needs to extract statistics;
-- user creation.
-
-
-# #! user database — PostgreSQL-based proposal
-
-## Design goals
+# Design goals
 
 This design leans strongly towards consistency of the data, enforced
 as much as possible at the database level.
@@ -164,7 +28,7 @@ Less apparent manifestations appear in the design of the database schema:
   [project-join normal form](https://en.wikipedia.org/wiki/Fifth_normal_form).
 
 
-## Replication
+# Replication
 
 In a single-master deployment, PostgreSQL has hot replication features that
 allow to immediately propagate changes to (a configurable number of) replicas,
@@ -174,18 +38,20 @@ Using a local PostgreSQL instance on each shell server, acting as a local replic
 immediately fulfills the availability requirements:
 - each server holds a read-only copy of the database, so users can login
   regardless of whether the DB master is available;
-- should the DB master be lost, the most up-to-date replica of the DB (can be found
-  by comparing `pg_last_xlog_receive_location` values) can be either promoted to
-  the role of master, or (preferred) copied to the new master instance.
+- should the DB master be lost, the most up-to-date replica of the DB
+  can be either promoted to the role of master, or (preferrably) copied
+  to the new master instance.  The most recent instance can be
+  discovered by comparing `pg_last_xlog_receive_location` values.
 
 Moreover, single-master PostgreSQL provides the usual ACID consistency guarantees.
 
 
-## Database schema
+# Database schema
 
 The database schema is provided in [`schema.sql`](schema.sql).
 
-DB constraints are used to enforce, as much as possible, consistency:
+DB constraints are used to enforce, as much as possible, consistency.
+For instance:
 - uids must be valid and unique;
 - usernames must be unique and follow the proper syntax rules;
 - a user's host must exist.
@@ -197,7 +63,7 @@ User records have an optional `data` column, that can hold
         Can this be expressed as a constraint?
 
 
-## Data representation
+# Data representation
 
 In the `passwd` and `hosts` tables, a `data` (binary) JSON object holds
 some non-relational data.  The rationale for this is two-fold:
@@ -217,19 +83,21 @@ must obey certain JSON schemata, for several reasons:
   more interoperable.
 
 
-*NOTE:* It might be possible to enforce the JSON Schema in the database itself.
-        This isn't an immediate goal.
+*NOTE:* It might be possible to enforce the JSON Schema in the database
+        itself. This isn't an immediate goal.
 
-*NOTE:* Yes, I'm aware I serialized the JSON Schema as YAML.  Yes, it's legit.
-
-
-## Permissions
-
-Moreso than separating permissions on a per-server basis, permissions should be
-assigned on a per-service basis, and follow the least privilege principle.
+*NOTE:* Yes, I'm aware I serialized the JSON Schema as YAML.
+        Yes, it's legit.
 
 
-### Shell servers
+# Permissions
+
+Moreso than separating permissions on a per-server basis, permissions
+should be assigned on a per-service basis, and follow the least
+privilege principle.
+
+
+## Shell servers
 
 A shell server hosts several components that get different access rights to the DB:
 - `pgsql`: the DB server itself need a DB user with the `replication` privilege.
@@ -239,7 +107,7 @@ A shell server hosts several components that get different access rights to the 
 - `hashbangctl`: needs write access to the `passwd.data` column.
 
 
-### `hashbang.sh`
+## `hashbang.sh`
 
 The website fulfills two complementary (and independent) roles:
 - user creation: `INSERT` privilege in the `passwd` table;
@@ -253,14 +121,14 @@ CREATE VIEW hosts_stats AS
 ```
 
 
-### `mail.hashbang.sh`
+## `mail.hashbang.sh`
 
 The mail server only needs read access to `passwd.{name,host}` and `hosts`.
 
 
-## Service integration
+# Service integration
 
-### Shell servers
+## Shell servers
 
 On the shell servers, integrating the new auth DB involves three things:
 - having Postgres installed and configured for streaming replication;
@@ -271,7 +139,7 @@ On the shell servers, integrating the new auth DB involves three things:
   user's `passwd.data` and pipe it to `jq '.ssh_keys | .[]'`.
 
 
-#### `libnss-pgsql` configuration
+### `libnss-pgsql` configuration
 
 The main part of the configuration of `libnss-pgsql` is to set the queries
 used to retrieve information from the database.  Passwords are systematically
@@ -310,10 +178,11 @@ Finally, we need a query to link together users and auxiliary groups:
 	                 UNION SELECT name FROM passwd JOIN aux_groups USING (uid) WHERE gid = $1
 
 
-### `mail.hashbang.sh`
+## `mail.hashbang.sh`
 
-We can se directly Postfix's Postgres support to use a specific query as a virtual
-table; `pgsql:/etc/postfix/pgsql-aliases.cf` can be specified as `virtual_alias_map`.
+We can se directly Postfix's Postgres support to use a specific query as
+a virtual table; `pgsql:/etc/postfix/pgsql-aliases.cf` can be specified
+as `virtual_alias_map`.
 
 The `pgsql-aliases.cf` config file itself would look like this:
 

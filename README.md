@@ -51,19 +51,22 @@ make test
 
 Please consider the following when submitting contributions:
 
-  - Observe the [Design Requirements] and update them as needed.
+  - Observe the [Design Requirements].
+  - Update the [Design Documentation] whenever designing new features
+	or modifying their implementation.
   - Follow the [SQL Style Guide].
   - Use Pull Requests for all changes.
   - Pull Requests are only merged when all tests pass **when merged with
 	master**. This is [the “not rocket science” rule] of software.
   - When designing new features, add tests for them right away.
 
-Feel free to reach out to us with ideas or to get help contributing. We are
-totally happy with something taking longer to do, if you learn something
-in the process. It is the reason #! exists.
+Feel free to reach out to us with ideas or to get help contributing. We
+are totally happy with something taking longer to do, if you learn
+something in the process. It is the reason #! exists.
 
-[Design Requirements]: DESIGN.md
-[SQL Style Guide]:     STYLEGUIDE.md
+[Design Requirements]:  REQUIREMENTS.md
+[Design Documentation]: DESIGN.md
+[SQL Style Guide]:      STYLEGUIDE.md
 [the “not rocket science” rule]: https://graydon2.dreamwidth.org/1597.html
 
 ## Notes ##

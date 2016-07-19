@@ -326,6 +326,7 @@ BEGIN
     SELECT assert.ok('End of test.') INTO message; RETURN message;
 END $$ LANGUAGE plpgsql;
 
+-- TODO: Add user/group tests (groups_dyn & getgroupmembersbygid)
 
 -- End of file: run all tests
 SELECT * FROM unit_tests.begin();

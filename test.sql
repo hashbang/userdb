@@ -251,5 +251,81 @@ BEGIN
     SELECT assert.ok('End of test.') INTO message; RETURN message;
 END $$ LANGUAGE plpgsql;
 
+
+/* Get (name, passwd, gid) for a given group
+ * selected by name
+ */
+CREATE FUNCTION unit_tests.getgrnam_usergroup()
+RETURNS test_result AS $$
+DECLARE message test_result;
+DECLARE result      boolean;
+DECLARE  user_uid   integer;
+DECLARE group_gid   integer;
+DECLARE group_name  text;
+DECLARE group_pass  text;
+BEGIN
+    -- Get uid
+    SELECT uid
+      FROM passwd
+     WHERE "name" = 'testadmin'
+      INTO user_uid;
+
+    -- Query for getgrnam
+    SELECT * FROM (
+      SELECT name, '!', gid
+      FROM "group"
+      WHERE name = 'testadmin'
+    UNION
+      SELECT name, '!', uid
+      FROM passwd
+      WHERE name = 'testadmin'
+    ) AS temp INTO group_name, group_pass, group_gid;
+
+    SELECT * FROM assert.is_equal(group_name, 'testadmin') INTO message, result;
+    IF result = false THEN RETURN message; END IF;
+
+    SELECT * FROM assert.is_equal(group_pass, '!') INTO message, result;
+    IF result = false THEN RETURN message; END IF;
+
+    SELECT * FROM assert.is_equal(group_gid, user_uid) INTO message, result;
+    IF result = false THEN RETURN message; END IF;
+
+    -- End of test
+    SELECT assert.ok('End of test.') INTO message; RETURN message;
+END $$ LANGUAGE plpgsql;
+
+CREATE FUNCTION unit_tests.getgrnam_systemgroup()
+RETURNS test_result AS $$
+DECLARE message test_result;
+DECLARE result      boolean;
+DECLARE group_gid   integer;
+DECLARE group_name  text;
+DECLARE group_pass  text;
+BEGIN
+    -- Query for getgrnam
+    SELECT * FROM (
+      SELECT name, '!', gid
+      FROM "group"
+      WHERE name = 'sudo'
+    UNION
+      SELECT name, '!', uid
+      FROM passwd
+      WHERE name = 'sudo'
+    ) AS temp INTO group_name, group_pass, group_gid;
+
+    SELECT * FROM assert.is_equal(group_name, 'sudo') INTO message, result;
+    IF result = false THEN RETURN message; END IF;
+
+    SELECT * FROM assert.is_equal(group_pass, '!') INTO message, result;
+    IF result = false THEN RETURN message; END IF;
+
+    SELECT * FROM assert.is_equal(group_gid, 27) INTO message, result;
+    IF result = false THEN RETURN message; END IF;
+
+    -- End of test
+    SELECT assert.ok('End of test.') INTO message; RETURN message;
+END $$ LANGUAGE plpgsql;
+
+
 -- End of file: run all tests
 SELECT * FROM unit_tests.begin();

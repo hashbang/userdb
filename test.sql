@@ -52,6 +52,26 @@ BEGIN
     SELECT assert.ok('End of test.') INTO message; RETURN message;
 END $$ LANGUAGE plpgsql;
 
+CREATE FUNCTION unit_tests.add_user_to_group()
+RETURNS test_result AS $$
+DECLARE testbox integer;
+DECLARE user_id integer;
+DECLARE message test_result;
+DECLARE result boolean;
+DECLARE passwd_name text;
+BEGIN
+    insert into passwd (name, host, "homedir","data") values ('testadmin', 1, '/home/testadmin', '{}'::jsonb) RETURNING uid INTO user_id;
+    insert into aux_groups (uid, gid) values (user_id, 27); -- 27 is sudo
+    SELECT "name"
+    FROM passwd JOIN aux_groups
+    USING (uid) WHERE (gid = 27)
+    INTO passwd_name;
+    SELECT * FROM assert.is_equal(passwd_name,'testadmin') INTO message, result;
+
+    IF result = false THEN RETURN message; END IF;
+    SELECT assert.ok('End of test.') INTO message; RETURN message;
+END $$ LANGUAGE plpgsql;
+
 
 -- End of file: run all tests
 SELECT * FROM unit_tests.begin();

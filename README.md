@@ -217,7 +217,7 @@ Extracting user information is fairly straightforward:
 
 	# Returns (name, passwd, gecos, dir, shell, uid, gid) for a given name or uid, or all
 	getpwnam = SELECT name, '!', data->>'name', homedir, data->>'shell', uid, uid FROM passwd WHERE name = $1
-	getpwuid = SELECT name, '!', data->>'name', homedir, data->>'shell', uid, uid FROM passwd WHERE id   = $1
+	getpwuid = SELECT name, '!', data->>'name', homedir, data->>'shell', uid, uid FROM passwd WHERE uid  = $1
 	allusers = SELECT name, '!', data->>'name', homedir, data->>'shell', uid, uid FROM passwd
 
 

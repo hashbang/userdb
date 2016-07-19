@@ -60,7 +60,10 @@ DECLARE message test_result;
 DECLARE result boolean;
 DECLARE passwd_name text;
 BEGIN
-    insert into passwd (name, host, "homedir","data") values ('testadmin', 1, '/home/testadmin', '{}'::jsonb) RETURNING uid INTO user_id;
+    insert into passwd (name, host, "homedir","data")
+    values ('testadmin', 1, '/home/testadmin',
+    '{ "name":"Just an admin.", "shell": "/usr/bin/zsh" }'::jsonb)
+    RETURNING uid INTO user_id;
     insert into aux_groups (uid, gid) values (user_id, 27); -- 27 is sudo
     SELECT "name"
     FROM passwd JOIN aux_groups
@@ -72,6 +75,98 @@ BEGIN
     SELECT assert.ok('End of test.') INTO message; RETURN message;
 END $$ LANGUAGE plpgsql;
 
+
+-- Test the queries used by libnss_pgsql --
+
+/* Return (name, passwd, gecos, dir, shell, uid, gid)
+ * for a given name or uid.
+ */
+CREATE FUNCTION unit_tests.getpwnam()
+RETURNS test_result AS $$
+DECLARE message test_result;
+DECLARE result     boolean;
+DECLARE user_uid   integer;
+DECLARE user_gid   integer;
+DECLARE user_home  text;
+DECLARE user_name  text;
+DECLARE user_pass  text;
+DECLARE user_shell text;
+DECLARE user_gecos text;
+BEGIN
+    SELECT "name", '!', "data"->>'name', homedir, "data"->>'shell', uid, uid
+      FROM passwd
+     WHERE name = 'testadmin'
+      INTO user_name, user_pass, user_gecos, user_home, user_shell, user_uid, user_gid;
+
+    SELECT * FROM assert.is_equal(user_name, 'testadmin') INTO message, result;
+    IF result = false THEN RETURN message; END IF;
+
+    SELECT * FROM assert.is_equal(user_pass, '!') INTO message, result;
+    IF result = false THEN RETURN message; END IF;
+
+    SELECT * FROM assert.is_equal(user_gecos, 'Just an admin.') INTO message, result;
+    IF result = false THEN RETURN message; END IF;
+
+    SELECT * FROM assert.is_equal(user_home, '/home/testadmin') INTO message, result;
+    IF result = false THEN RETURN message; END IF;
+
+    SELECT * FROM assert.is_equal(user_shell, '/usr/bin/zsh') INTO message, result;
+    IF result = false THEN RETURN message; END IF;
+
+    SELECT * FROM assert.is_equal(user_uid, user_gid) INTO message, result;
+    IF result = false THEN RETURN message; END IF;
+
+    -- End of test
+    SELECT assert.ok('End of test.') INTO message; RETURN message;
+END $$ LANGUAGE plpgsql;
+
+CREATE FUNCTION unit_tests.getpwuid()
+RETURNS test_result AS $$
+DECLARE message test_result;
+DECLARE result     boolean;
+DECLARE user_uid   integer;
+DECLARE user_gid   integer;
+DECLARE user_home  text;
+DECLARE user_name  text;
+DECLARE user_pass  text;
+DECLARE user_shell text;
+DECLARE user_gecos text;
+BEGIN
+    -- Get uid
+    SELECT uid
+      FROM passwd
+     WHERE "name" = 'testadmin'
+      INTO user_uid;
+
+    -- Query for getpwuid
+    SELECT "name", '!', "data"->>'name', homedir, "data"->>'shell', uid, uid
+      FROM passwd
+     WHERE uid = user_uid
+      INTO user_name, user_pass, user_gecos, user_home, user_shell, user_uid, user_gid;
+
+    SELECT * FROM assert.is_equal(user_name, 'testadmin') INTO message, result;
+    IF result = false THEN RETURN message; END IF;
+
+    SELECT * FROM assert.is_equal(user_pass, '!') INTO message, result;
+    IF result = false THEN RETURN message; END IF;
+
+    SELECT * FROM assert.is_equal(user_gecos, 'Just an admin.') INTO message, result;
+    IF result = false THEN RETURN message; END IF;
+
+    SELECT * FROM assert.is_equal(user_home, '/home/testadmin') INTO message, result;
+    IF result = false THEN RETURN message; END IF;
+
+    SELECT * FROM assert.is_equal(user_shell, '/usr/bin/zsh') INTO message, result;
+    IF result = false THEN RETURN message; END IF;
+
+    SELECT * FROM assert.is_equal(user_uid, user_gid) INTO message, result;
+    IF result = false THEN RETURN message; END IF;
+
+    -- End of test
+    SELECT assert.ok('End of test.') INTO message; RETURN message;
+END $$ LANGUAGE plpgsql;
+
+-- TODO: test for `allusers`
 
 -- End of file: run all tests
 SELECT * FROM unit_tests.begin();

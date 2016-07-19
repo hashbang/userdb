@@ -42,8 +42,8 @@ DECLARE result boolean;
 DECLARE passwd_name text;
 BEGIN
 --    SELECT id FROM hosts WHERE "name" = "testbox" INTO testbox;
-    insert into passwd (name, host, "homedir","data") values ('testuser', 1, '/home/testuser', '{}'::jsonb);
-    insert into passwd (name, host, "homedir","data") values ('testuser2', 1, '/home/testuser2', '{}'::jsonb) returning name INTO passwd_name;
+    insert into passwd (name, host, "homedir","data") values ('testuser', 'testbox', '/home/testuser', '{}'::jsonb);
+    insert into passwd (name, host, "homedir","data") values ('testuser2', 'testbox', '/home/testuser2', '{}'::jsonb) returning name INTO passwd_name;
     SELECT * FROM assert.is_equal(passwd_name,'testuser2') INTO message, result;
 
     IF result = false THEN RETURN message; END IF;

@@ -1,3 +1,5 @@
+-- -*- mode: sql; product: postgres -*-
+
 -- Basic operations populating the database.
 
 CREATE FUNCTION unit_tests.create_hosts()

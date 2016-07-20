@@ -255,15 +255,21 @@ CREATE FUNCTION unit_tests.groups_dyn()
 RETURNS test_result AS $$
 DECLARE message test_result;
 DECLARE result  boolean;
+DECLARE useruid integer;
 DECLARE usergid integer;
 BEGIN
+    SELECT uid
+      FROM passwd
+     WHERE name = 'testadmin'
+      INTO useruid;
+
     -- Query for groups_dyn
     SELECT gid
       FROM passwd JOIN aux_groups USING (uid)
      WHERE name = 'testadmin'
       INTO usergid;
 
-    SELECT * FROM assert.are_not_equal(usergid) INTO message, result;
+    SELECT * FROM assert.is_not_equal(usergid, useruid) INTO message, result;
     IF result = false THEN RETURN message; END IF;
 
     -- End of test
@@ -289,6 +295,6 @@ BEGIN
     SELECT * FROM assert.is_equal(user_name, 'testadmin') INTO message, result;
     IF result = false THEN RETURN message; END IF;
 
--- End of test
+    -- End of test
     SELECT assert.ok('End of test.') INTO message; RETURN message;
 END $$ LANGUAGE plpgsql;

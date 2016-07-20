@@ -14,14 +14,18 @@ CREATE TABLE "hosts" (
 
 -- data for NSS' passwd
 -- there is an implicit primary group for each user
-CREATE SEQUENCE user_id MINVALUE 4000 MAXVALUE 2147483647 NO CYCLE;
+-- UID and GID ranges conform to Debian policy:
+--  https://www.debian.org/doc/debian-policy/ch-opersys.html#s9.2.2
+CREATE SEQUENCE user_id MINVALUE 4000 MAXVALUE 59999 NO CYCLE;
 
 CREATE DOMAIN username_t varchar(31) CHECK (
   VALUE ~ '^[a-z][a-z0-9]+$'
 );
 
 CREATE TABLE "passwd" (
-  "uid" integer PRIMARY KEY CHECK(uid >= 1000) DEFAULT nextval('user_id'),
+  "uid" integer PRIMARY KEY
+    CHECK((uid >= 1000 AND uid < 60000) OR (uid > 65535 AND uid < 4294967294))
+    DEFAULT nextval('user_id'),
   "name" username_t UNIQUE NOT NULL,
   "host" text NOT NULL REFERENCES hosts (name),
   "homedir" text NOT NULL,
@@ -32,7 +36,7 @@ alter sequence user_id owned by passwd.uid;
 
 -- auxiliary groups
 CREATE TABLE "group" (
-  "gid" integer PRIMARY KEY CHECK(gid < 1000),
+  "gid" integer PRIMARY KEY CHECK(gid < 1000 OR (gid >= 60000 AND gid < 65000)),
   "name" username_t UNIQUE NOT NULL
 );
 

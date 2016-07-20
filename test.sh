@@ -18,10 +18,17 @@ pg_ctl -D "${WORKDIR}" start -w -o "          \
 
 
 PSQL="psql --set ON_ERROR_STOP=1 -h ${WORKDIR} -d postgres"
-for file in tests/plpgunit/install/1.install-unit-test.sql schema.sql tests/*.sql
-do
-    ${PSQL} -f "$file"
-done
 
-${PSQL} -c 'SELECT * FROM unit_tests.begin();' | tee "${WORKDIR}/log"
-grep -q 'Failed tests *: 0.' "${WORKDIR}/log"
+${PSQL} -f schema.sql
+
+if [ "$1" = 'develop' ]; then
+    psql -h "${WORKDIR}" -d postgres
+else
+    for file in tests/plpgunit/install/1.install-unit-test.sql tests/*.sql
+    do
+	${PSQL} -f "$file"
+    done
+
+    ${PSQL} -c 'SELECT * FROM unit_tests.begin();' | tee "${WORKDIR}/log"
+    grep -q 'Failed tests *: 0.' "${WORKDIR}/log"
+fi

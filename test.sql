@@ -31,9 +31,13 @@ DECLARE result boolean;
 DECLARE group_gid integer;
 BEGIN
     insert into "group" (gid, name) values (27, 'sudo') RETURNING gid INTO group_gid;
-    SELECT * FROM assert.is_equal(group_gid,27) INTO message, result;
-
+    SELECT * FROM assert.is_equal(group_gid, 27) INTO message, result;
     IF result = false THEN RETURN message; END IF;
+
+    insert into "group" (gid, name) values (4, 'adm') RETURNING gid INTO group_gid;
+    SELECT * FROM assert.is_equal(group_gid,  4) INTO message, result;
+    IF result = false THEN RETURN message; END IF;
+
     SELECT assert.ok('End of test.') INTO message; RETURN message;
 END $$ LANGUAGE plpgsql;
 
@@ -65,7 +69,10 @@ BEGIN
     values ('testadmin', 'testbox.hashbang.sh', '/home/testadmin',
     '{ "name":"Just an admin.", "shell": "/usr/bin/zsh" }'::jsonb)
     RETURNING uid INTO user_id;
+
     insert into aux_groups (uid, gid) values (user_id, 27); -- 27 is sudo
+    insert into aux_groups (uid, gid) values (user_id,  4); --  4 is adm
+
     SELECT "name"
     FROM passwd JOIN aux_groups
     USING (uid) WHERE (gid = 27)
@@ -325,8 +332,50 @@ BEGIN
     SELECT assert.ok('End of test.') INTO message; RETURN message;
 END $$ LANGUAGE plpgsql;
 
--- TODO: Add user/group tests (groups_dyn & getgroupmembersbygid)
+/* groups_dyn returns all /auxiliary/ gids
+ * that a user is a member of
+ */
+CREATE FUNCTION unit_tests.groups_dyn()
+RETURNS test_result AS $$
+DECLARE message test_result;
+DECLARE result  boolean;
+DECLARE usergid integer;
+BEGIN
+    -- Query for groups_dyn
+    SELECT gid
+      FROM passwd JOIN aux_groups USING (uid)
+     WHERE name = 'testadmin'
+      INTO usergid;
 
+    SELECT * FROM assert.are_not_equal(usergid) INTO message, result;
+    IF result = false THEN RETURN message; END IF;
+
+    -- End of test
+    SELECT assert.ok('End of test.') INTO message; RETURN message;
+END $$ LANGUAGE plpgsql;
+
+
+/* groups_dyn returns all users (by name)
+ * that are member of a given group (by gid)
+ */
+CREATE FUNCTION unit_tests.getgroupmembersbygid()
+RETURNS test_result AS $$
+DECLARE message   test_result;
+DECLARE result    boolean;
+DECLARE user_name text;
+BEGIN
+    -- Query for getgroupmembersbygid
+    SELECT name
+      FROM passwd JOIN aux_groups USING (uid)
+     WHERE gid = 27 -- sudo
+      INTO user_name;
+
+    SELECT * FROM assert.is_equal(user_name, 'testadmin') INTO message, result;
+    IF result = false THEN RETURN message; END IF;
+
+-- End of test
+    SELECT assert.ok('End of test.') INTO message; RETURN message;
+END $$ LANGUAGE plpgsql;
 
 -- Query used by Postfix
 CREATE FUNCTION unit_tests.postfix()

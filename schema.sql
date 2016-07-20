@@ -1,8 +1,12 @@
 -- -*- mode: sql; product: postgres -*-
 
 -- hosts table
+CREATE DOMAIN hostname_t text CHECK (
+  VALUE ~ '^([a-z0-9]+\.)+hashbang\.sh$'
+);
+
 CREATE TABLE "hosts" (
-  "name" text PRIMARY KEY,
+  "name" hostname_t PRIMARY KEY,
   "maxusers" integer CHECK(maxusers >= 0),
   "data" jsonb -- extra data added in the stats answer
                -- conforms to the host_data.yaml schema

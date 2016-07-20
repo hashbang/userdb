@@ -23,4 +23,5 @@ do
     ${PSQL} -f "$file"
 done
 
-${PSQL} -c 'SELECT * FROM unit_tests.begin();'
+${PSQL} -c 'SELECT * FROM unit_tests.begin();' | tee "${WORKDIR}/log"
+grep -q 'Failed tests *: 0.' "${WORKDIR}/log"

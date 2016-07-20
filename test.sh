@@ -16,7 +16,11 @@ pg_ctl -D "${WORKDIR}" start -w -o "          \
 	-c listen_addresses=''                \
 "
 
-for file in tests/plpgunit/install/1.install-unit-test.sql schema.sql test.sql
+
+PSQL="psql --set ON_ERROR_STOP=1 -h ${WORKDIR} -d postgres"
+for file in tests/plpgunit/install/1.install-unit-test.sql schema.sql tests/*.sql
 do
-    psql --set ON_ERROR_STOP=1 -h "${WORKDIR}" -d postgres -f "$file"
+    ${PSQL} -f "$file"
 done
+
+${PSQL} -c 'SELECT * FROM unit_tests.begin();'

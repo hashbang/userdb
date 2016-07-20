@@ -1,3 +1,7 @@
+-- -*- mode: sql; product: postgres -*-
+
+-- Basic operations populating the database.
+
 CREATE FUNCTION unit_tests.create_hosts()
 RETURNS test_result AS $$
 DECLARE message test_result;
@@ -5,18 +9,18 @@ DECLARE result boolean;
 DECLARE host_name text;
 BEGIN
     insert into hosts (name, data) values ('testbox.hashbang.sh', '{
-        "inet": ["192.0.2.4"],
-        "coordinates": {
-            "lat": 0,
-            "lon": 0
-        },
-        "location": "Undisclosed location",
-        "maxUsers": 1000
+	"inet": ["192.0.2.4"],
+	"coordinates": {
+	    "lat": 0,
+	    "lon": 0
+	},
+	"location": "NULL island",
+	"maxUsers": 1000
      }'::jsonb) returning name INTO host_name;
     SELECT * FROM assert.is_equal(host_name,'testbox.hashbang.sh') INTO message, result;
 
     IF result = false THEN RETURN message; END IF;
-    SELECT assert.ok('End of test.') INTO message; RETURN message; 
+    SELECT assert.ok('End of test.') INTO message; RETURN message;
 END $$ LANGUAGE plpgsql;
 
 
@@ -27,10 +31,14 @@ DECLARE result boolean;
 DECLARE group_gid integer;
 BEGIN
     insert into "group" (gid, name) values (27, 'sudo') RETURNING gid INTO group_gid;
-    SELECT * FROM assert.is_equal(group_gid,27) INTO message, result;
-
+    SELECT * FROM assert.is_equal(group_gid, 27) INTO message, result;
     IF result = false THEN RETURN message; END IF;
-    SELECT assert.ok('End of test.') INTO message; RETURN message; 
+
+    insert into "group" (gid, name) values (4, 'adm') RETURNING gid INTO group_gid;
+    SELECT * FROM assert.is_equal(group_gid,  4) INTO message, result;
+    IF result = false THEN RETURN message; END IF;
+
+    SELECT assert.ok('End of test.') INTO message; RETURN message;
 END $$ LANGUAGE plpgsql;
 
 
@@ -46,22 +54,31 @@ BEGIN
     SELECT * FROM assert.is_equal(passwd_name,'testuser2') INTO message, result;
 
     IF result = false THEN RETURN message; END IF;
-    SELECT assert.ok('End of test.') INTO message; RETURN message; 
+    SELECT assert.ok('End of test.') INTO message; RETURN message;
 END $$ LANGUAGE plpgsql;
 
-
--- Query used by Postfix
-CREATE FUNCTION unit_tests.postfix()
+CREATE FUNCTION unit_tests.add_user_to_group()
 RETURNS test_result AS $$
+DECLARE testbox integer;
+DECLARE user_id integer;
 DECLARE message test_result;
 DECLARE result boolean;
-DECLARE passwd_host text;
+DECLARE passwd_name text;
 BEGIN
-    SELECT host FROM passwd WHERE name = 'testuser' INTO passwd_host;
-    SELECT * FROM assert.is_equal(passwd_host, 'testbox.hashbang.sh') INTO message, result;
+    insert into passwd (name, host, "homedir","data")
+    values ('testadmin', 'testbox.hashbang.sh', '/home/testadmin',
+    '{ "name":"Just an admin.", "shell": "/usr/bin/zsh" }'::jsonb)
+    RETURNING uid INTO user_id;
+
+    insert into aux_groups (uid, gid) values (user_id, 27); -- 27 is sudo
+    insert into aux_groups (uid, gid) values (user_id,  4); --  4 is adm
+
+    SELECT "name"
+    FROM passwd JOIN aux_groups
+    USING (uid) WHERE (gid = 27)
+    INTO passwd_name;
+    SELECT * FROM assert.is_equal(passwd_name,'testadmin') INTO message, result;
 
     IF result = false THEN RETURN message; END IF;
     SELECT assert.ok('End of test.') INTO message; RETURN message;
 END $$ LANGUAGE plpgsql;
-
-SELECT * FROM unit_tests.begin();

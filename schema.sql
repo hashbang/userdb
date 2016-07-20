@@ -1,9 +1,12 @@
 -- -*- mode: sql; product: postgres -*-
 
 -- hosts table
+CREATE DOMAIN hostname_t text CHECK (
+  VALUE ~ '^([a-z0-9]+\.)+hashbang\.sh$'
+);
+
 CREATE TABLE "hosts" (
-  "id" serial PRIMARY KEY,
-  "name" text UNIQUE NOT NULL,
+  "name" hostname_t PRIMARY KEY,
   "maxusers" integer CHECK(maxusers >= 0),
   "data" jsonb -- extra data added in the stats answer
                -- conforms to the host_data.yaml schema
@@ -24,7 +27,7 @@ CREATE TABLE "passwd" (
     CHECK((uid >= 1000 AND uid < 60000) OR (uid > 65535 AND uid < 4294967294))
     DEFAULT nextval('user_id'),
   "name" username_t UNIQUE NOT NULL,
-  "host" integer NOT NULL REFERENCES hosts (id),
+  "host" text NOT NULL REFERENCES hosts (name),
   "homedir" text NOT NULL,
   "data" jsonb  -- conforms to the user_data.yaml schema
 );
@@ -50,7 +53,7 @@ create function check_max_users() returns trigger
     language plpgsql as $$
     begin
 	if (tg_op = 'INSERT' or old.host <> new.host) and
-	   (select count(*) from passwd where passwd.host = new.host) >= (select "maxusers" from hosts where hosts.id = new.host) then
+	   (select count(*) from passwd where passwd.host = new.host) >= (select "maxusers" from hosts where hosts.name = new.host) then
 	    raise foreign_key_violation using message = 'maxUsers reached for host: '||new.host;
 	end if;
 	return new;

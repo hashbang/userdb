@@ -1,0 +1,3 @@
+[submodule "tests/plpgunit"]
+	path = tests/plpgunit
+	url = https://github.com/mixerp/plpgunit

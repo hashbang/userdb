@@ -5,9 +5,7 @@ if ! command -v initdb 2>/dev/null; then
     exit 1
 fi
 
-if [ ! -d /tmp/plpgunit ]; then
-    git clone https://github.com/mixerp/plpgunit /tmp/plpgunit
-fi
+git submodule update
 
 trap 'pg_ctl -D "${WORKDIR}" stop; rm -rf -- "${WORKDIR}"' EXIT
 WORKDIR=$(mktemp -d)
@@ -18,6 +16,7 @@ pg_ctl -D "${WORKDIR}" start -w -o "          \
 	-c listen_addresses=''                \
 "
 
-for file in /tmp/plpgunit/install/1.install-unit-test.sql schema.sql test.sql; do
+for file in tests/plpgunit/install/1.install-unit-test.sql schema.sql test.sql
+do
     psql --set ON_ERROR_STOP=1 -h "${WORKDIR}" -d postgres -f "$file"
 done

@@ -5,7 +5,7 @@ if ! command -v initdb 2>/dev/null; then
     exit 1
 fi
 
-git submodule update
+#git submodule update
 
 trap 'pg_ctl -D "${WORKDIR}" stop; rm -rf -- "${WORKDIR}"' EXIT
 WORKDIR=$(mktemp -d)
@@ -20,6 +20,7 @@ pg_ctl -D "${WORKDIR}" start -w -o "          \
 PSQL="psql --set ON_ERROR_STOP=1 -h ${WORKDIR} -d postgres"
 
 ${PSQL} -f schema.sql
+${PSQL} -f notify.sql
 
 if [ "$1" = 'develop' ]; then
     psql -h "${WORKDIR}" -d postgres

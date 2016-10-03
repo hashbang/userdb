@@ -200,3 +200,63 @@ The `pgsql-aliases.cf` config file itself would look like this:
 	domain = hashbang.sh
 	query = SELECT host FROM passwd WHERE name='%U'
 	result_format = %U@%s
+
+
+# LISTEN
+
+Certain services need to not only be able to query specific rows in the
+userdb, but maintain datastructures that reflect (part of) the entire
+database.
+
+Those services have (mainly) two options:
+
+1. regularly poll the relevant parts of the database
+   and rebuild the datastructure from scratch;
+2. initialize their datastructure by querying the database,
+   then update it whenever a row changes.
+
+The first option has the advantage of being simpler,
+whereas the second one provides the following:
+
+- The service is “immediately” updated after a userdb update.
+- The service is much more efficient:
+  - it performs no useless work when the userdb doesn't change;
+  - a single userdb change doesn't cause a rescan of the entire DB;
+  - the only way the notify-based service may be slower is some specific
+	rows get repeatedly updated (more times than there are rows in the
+	table).
+- In a master/slave replication scenario, the master gains (for free!)
+  the knowledge of when to push updated data to slaves.
+
+
+As such, and given that userdb is expected to have a low write-rate,
+the notification-based solution was selected.
+
+
+## Example: DNS server
+
+XXXTODO
+
+
+## Trade-offs
+
+The implementation in `schema.sql` provides a generic, per-table
+notification channel, based on PostgreSQL's built-in pub/sub mechanism.
+
+It uses a stored procedure, triggered on every table update, to dispatch
+the changed row to the channel.  On the plus side:
+
+- This is a reuseable mechanism, that doesn't require service- or
+  table-specific code on the DB side.
+- It doesn't require services that write to the DB to be
+  notification-aware.
+- The implementation is very simple.
+
+On the other hand, this genericity and flexibility comes with some cost:
+
+- Since there is no service-specific code, the entire row is dispatched
+  in the notification message; it is potentially much larger than the
+  relevant part.
+- LISTEN can only be used on the DB master, meaning that the DNS master
+  should likely run on the same container host (or at least in the same
+  geographic zone).

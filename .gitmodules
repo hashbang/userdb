@@ -1,3 +1,6 @@
 [submodule "tests/plpgunit"]
 	path = tests/plpgunit
 	url = https://github.com/mixerp/plpgunit
+[submodule "schemas"]
+	path = schemas
+	url = https://github.com/hashbang/userdb-schemas.git

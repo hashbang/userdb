@@ -30,6 +30,7 @@ CREATE TABLE "passwd" (
   "host" text NOT NULL REFERENCES hosts (name),
   "homedir" text NOT NULL,
   "data" jsonb  -- conforms to the user_data.yaml schema
+    CHECK(length(data::text) < 1048576) -- max 1M
 );
 
 alter sequence user_id owned by passwd.uid;

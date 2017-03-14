@@ -18,8 +18,8 @@ CREATE TABLE "hosts" (
 --  https://www.debian.org/doc/debian-policy/ch-opersys.html#s9.2.2
 CREATE SEQUENCE user_id MINVALUE 4000 MAXVALUE 59999 NO CYCLE;
 
-CREATE DOMAIN username_t varchar(31) CHECK (
-  VALUE ~ '^[a-z][a-z0-9]+$'
+CREATE DOMAIN username_t text CHECK (
+  VALUE ~ '^[a-z][a-z0-9]{0,30}$'
 );
 
 CREATE TABLE "passwd" (

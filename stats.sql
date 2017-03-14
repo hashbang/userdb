@@ -6,7 +6,7 @@ CREATE VIEW statistics AS
   SELECT name, users, maxusers, data
     FROM hosts
     JOIN (
-            SELECT COUNT(*) AS users,
+            SELECT COUNT(1) AS users,
 	           host
               FROM passwd
           GROUP BY host

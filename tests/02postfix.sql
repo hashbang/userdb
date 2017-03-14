@@ -1,4 +1,4 @@
--- -*- mode: sql; product: postgres -*-
+-- -*- mode: sql; sql-product: postgres -*-
 
 -- Query used by Postfix
 CREATE FUNCTION unit_tests.postfix()

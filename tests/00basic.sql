@@ -1,4 +1,4 @@
--- -*- mode: sql; product: postgres -*-
+-- -*- mode: sql; sql-product: postgres -*-
 
 -- Basic operations populating the database.
 

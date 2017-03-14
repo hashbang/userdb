@@ -1,4 +1,4 @@
--- -*- mode: sql; product: postgres -*-
+-- -*- mode: sql; sql-product: postgres -*-
 
 -- hosts table
 CREATE DOMAIN hostname_t text CHECK (

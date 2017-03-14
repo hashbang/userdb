@@ -1,4 +1,4 @@
--- -*- mode: sql; product: postgres -*-
+-- -*- mode: sql; sql-product: postgres -*-
 
 -- Test the queries used by libnss_pgsql --
 

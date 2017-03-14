@@ -1,3 +1,5 @@
+SCHEMA_FILES= schema.sql stats.sql
+
 .PHONY: help develop test install
 
 help:
@@ -13,6 +15,6 @@ test:
 	./test.sh
 
 install:
-	createdb userdb 
-	psql -v ON_ERROR_STOP=1 -h localhost -d userdb -f schema.sql
+	createdb userdb
+	@(foreach file,$(SCHEMA_FILES),psql -v ON_ERROR_STOP=1 -h localhost -d userdb -f $(file);)
 

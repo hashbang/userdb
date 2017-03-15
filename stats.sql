@@ -1,8 +1,8 @@
 -- -*- mode: sql; sql-product: postgres -*-
 
--- Create the statistics view
+-- Create the host statistics view
 -- This is what the statistics API endpoint must expose, formated as JSON.
-CREATE VIEW statistics AS
+CREATE VIEW host_statistics AS
   SELECT name, users, maxusers, data
     FROM hosts
     JOIN (

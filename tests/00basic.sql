@@ -17,6 +17,15 @@ BEGIN
 	"location": "NULL island",
 	"maxUsers": 1000
      }'::jsonb) returning name INTO host_name;
+    insert into hosts (name, data) values ('fo0.hashbang.sh', '{
+	"inet": ["192.0.2.6"],
+	"coordinates": {
+	    "lat": 1,
+	    "lon": 2
+	},
+	"location": "Disk Dr.",
+	"maxUsers": 1000
+     }'::jsonb);
     SELECT * FROM assert.is_equal(host_name,'testbox.hashbang.sh') INTO message, result;
 
     IF result = false THEN RETURN message; END IF;
@@ -66,7 +75,7 @@ DECLARE result boolean;
 DECLARE passwd_name text;
 BEGIN
     insert into passwd (name, host, "homedir","data")
-    values ('testadmin', 'testbox.hashbang.sh', '/home/testadmin',
+    values ('testadmin', 'fo0.hashbang.sh', '/home/testadmin',
     '{ "name":"Just an admin.", "shell": "/usr/bin/zsh" }'::jsonb)
     RETURNING uid INTO user_id;
 

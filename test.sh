@@ -27,7 +27,9 @@ run pg_ctl -D "${WORKDIR}" start -w -o "      \
 
 PSQL="psql --set ON_ERROR_STOP=1 -h ${WORKDIR} -d postgres"
 
-run ${PSQL} -f schema.sql
+for file in schema.sql stats.sql; do
+    run ${PSQL} -f "$file"
+done
 
 if [ "$1" = 'develop' ]; then
     run psql -h "${WORKDIR}" -d postgres

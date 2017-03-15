@@ -15,10 +15,9 @@ DECLARE view_maxusers integer;
 DECLARE view_name     text;
 DECLARE view_users    integer;
 DECLARE count_users   integer;
-DECLARE for_hosts     varchar[] := array['fo0.hashbang.sh', 'testbox.hashbang.sh'];
 DECLARE h             varchar;
 BEGIN
-    FOREACH h IN ARRAY for_hosts
+    FOR h in (SELECT name FROM hosts)
     LOOP
         SELECT * FROM hosts WHERE name = h
         INTO host_name, host_maxusers, host_data;

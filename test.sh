@@ -38,14 +38,14 @@ for file in schema.sql stats.sql; do
     run ${PSQL} -f "$file"
 done
 
-if [ "$1" = 'develop' ]; then
-    run psql -h "${WORKDIR}" -d postgres
-else
-    for file in tests/plpgunit/install/1.install-unit-test.sql tests/*.sql
-    do
-	run ${PSQL} -f "$file"
-    done
+for file in tests/plpgunit/install/1.install-unit-test.sql tests/*.sql; do
+    run ${PSQL} -f "$file"
+done
 
-    run ${PSQL} -c 'SELECT * FROM unit_tests.begin();' | tee "${WORKDIR}/log"
+run ${PSQL} -c 'SELECT * FROM unit_tests.begin();' | tee "${WORKDIR}/log"
+
+if [ "$1" != 'develop' ]; then
     grep -q 'Failed tests *: 0.' "${WORKDIR}/log"
+else
+    run psql -h "${WORKDIR}" -d postgres
 fi

@@ -8,6 +8,13 @@ run() {
     "$@"
 }
 
+# Some distros support multiple installed versions of PostgreSQL
+if ! command -v initdb 2>/dev/null; then
+    for dir in /usr/lib/postgresql/*; do
+	export PATH="${dir}/bin:${PATH}"
+    done
+fi
+
 if ! command -v initdb 2>/dev/null; then
     echo "No PostgreSQL utilities in PATH" >&2
     exit 1

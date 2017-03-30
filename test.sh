@@ -47,5 +47,9 @@ run ${PSQL} -c 'SELECT * FROM unit_tests.begin();' | tee "${WORKDIR}/log"
 if [ "$1" != 'develop' ]; then
     grep -q 'Failed tests *: 0.' "${WORKDIR}/log"
 else
-    run psql -h "${WORKDIR}" -d postgres
+    if command -v pgcli >/dev/null; then
+	run pgcli -h "${WORKDIR}" -d postgres
+    else
+	run psql -h "${WORKDIR}" -d postgres
+    fi
 fi

@@ -8,6 +8,13 @@ run() {
     "$@"
 }
 
+# Some distros support multiple installed versions of PostgreSQL
+if ! command -v initdb 2>/dev/null; then
+    for dir in /usr/lib/postgresql/*; do
+	export PATH="${dir}/bin:${PATH}"
+    done
+fi
+
 if ! command -v initdb 2>/dev/null; then
     echo "No PostgreSQL utilities in PATH" >&2
     exit 1
@@ -31,14 +38,18 @@ for file in schema.sql stats.sql; do
     run ${PSQL} -f "$file"
 done
 
-if [ "$1" = 'develop' ]; then
-    run psql -h "${WORKDIR}" -d postgres
-else
-    for file in tests/plpgunit/install/1.install-unit-test.sql tests/*.sql
-    do
-	run ${PSQL} -f "$file"
-    done
+for file in tests/plpgunit/install/1.install-unit-test.sql tests/*.sql; do
+    run ${PSQL} -f "$file"
+done
 
-    run ${PSQL} -c 'SELECT * FROM unit_tests.begin();' | tee "${WORKDIR}/log"
+run ${PSQL} -c 'SELECT * FROM unit_tests.begin();' | tee "${WORKDIR}/log"
+
+if [ "$1" != 'develop' ]; then
     grep -q 'Failed tests *: 0.' "${WORKDIR}/log"
+else
+    if command -v pgcli >/dev/null; then
+	run pgcli -h "${WORKDIR}" -d postgres
+    else
+	run psql -h "${WORKDIR}" -d postgres
+    fi
 fi

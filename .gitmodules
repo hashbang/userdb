@@ -4,3 +4,6 @@
 [submodule "schemas"]
 	path = schemas
 	url = https://github.com/hashbang/userdb-schemas.git
+[submodule "postgres-json-schema"]
+	path = postgres-json-schema
+	url = https://github.com/gavinwahl/postgres-json-schema.git

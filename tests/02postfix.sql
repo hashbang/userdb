@@ -17,5 +17,5 @@ BEGIN
 
     IF result = false THEN RETURN message; END IF;
 
-    SELECT assert.ok('End of test.') INTO message; RETURN message;
+    RETURN assert.ok('End of test.');
 END $$ LANGUAGE plpgsql;

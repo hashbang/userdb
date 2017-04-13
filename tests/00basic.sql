@@ -29,7 +29,7 @@ BEGIN
     SELECT * FROM assert.is_equal(host_name,'testbox.hashbang.sh') INTO message, result;
 
     IF result = false THEN RETURN message; END IF;
-    SELECT assert.ok('End of test.') INTO message; RETURN message;
+    RETURN assert.ok('End of test.');
 END $$ LANGUAGE plpgsql;
 
 
@@ -47,7 +47,7 @@ BEGIN
     SELECT * FROM assert.is_equal(group_gid,  4) INTO message, result;
     IF result = false THEN RETURN message; END IF;
 
-    SELECT assert.ok('End of test.') INTO message; RETURN message;
+    RETURN assert.ok('End of test.');
 END $$ LANGUAGE plpgsql;
 
 
@@ -63,7 +63,7 @@ BEGIN
     SELECT * FROM assert.is_equal(passwd_name,'testuser2') INTO message, result;
 
     IF result = false THEN RETURN message; END IF;
-    SELECT assert.ok('End of test.') INTO message; RETURN message;
+    RETURN assert.ok('End of test.');
 END $$ LANGUAGE plpgsql;
 
 CREATE FUNCTION unit_tests.add_user_to_group()
@@ -89,5 +89,5 @@ BEGIN
     SELECT * FROM assert.is_equal(passwd_name,'testadmin') INTO message, result;
 
     IF result = false THEN RETURN message; END IF;
-    SELECT assert.ok('End of test.') INTO message; RETURN message;
+    RETURN assert.ok('End of test.');
 END $$ LANGUAGE plpgsql;

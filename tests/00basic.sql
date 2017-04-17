@@ -58,8 +58,8 @@ DECLARE message test_result;
 DECLARE result boolean;
 DECLARE passwd_name text;
 BEGIN
-    insert into passwd (name, host, "homedir","data") values ('testuser', 'testbox.hashbang.sh', '/home/testuser', '{}'::jsonb);
-    insert into passwd (name, host, "homedir","data") values ('testuser2', 'testbox.hashbang.sh', '/home/testuser2', '{}'::jsonb) returning name INTO passwd_name;
+    insert into passwd (name, host, "homedir","data") values ('testuser', 'testbox.hashbang.sh', '/home/testuser', '{"ssh_keys": [], "shell": "/sbin/nologin"}'::jsonb);
+    insert into passwd (name, host, "homedir","data") values ('testuser2', 'testbox.hashbang.sh', '/home/testuser2', '{"ssh_keys": [], "shell": "/bin/sh"}'::jsonb) returning name INTO passwd_name;
     SELECT * FROM assert.is_equal(passwd_name,'testuser2') INTO message, result;
 
     IF result = false THEN RETURN message; END IF;
@@ -76,7 +76,7 @@ DECLARE passwd_name text;
 BEGIN
     insert into passwd (name, host, "homedir","data")
     values ('testadmin', 'fo0.hashbang.sh', '/home/testadmin',
-    '{ "name":"Just an admin.", "shell": "/usr/bin/zsh" }'::jsonb)
+    '{ "name":"Just an admin.", "ssh_keys": [], "shell": "/usr/bin/zsh" }'::jsonb)
     RETURNING uid INTO user_id;
 
     insert into aux_groups (uid, gid) values (user_id, 27); -- 27 is sudo

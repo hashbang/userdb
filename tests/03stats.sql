@@ -40,5 +40,5 @@ BEGIN
 	SELECT * FROM assert.is_equal(view_users, count_users) INTO message, result;
         IF result = false THEN RETURN message; END IF;
     END LOOP;
-    SELECT assert.ok('End of test.') INTO message; RETURN message;
+    RETURN assert.ok('End of test.');
 END $$ LANGUAGE plpgsql;

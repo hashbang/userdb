@@ -41,7 +41,7 @@ BEGIN
     IF result = false THEN RETURN message; END IF;
 
     -- End of test
-    SELECT assert.ok('End of test.') INTO message; RETURN message;
+    RETURN assert.ok('End of test.');
 END $$ LANGUAGE plpgsql;
 
 CREATE FUNCTION unit_tests.getpwuid()
@@ -87,7 +87,7 @@ BEGIN
     IF result = false THEN RETURN message; END IF;
 
     -- End of test
-    SELECT assert.ok('End of test.') INTO message; RETURN message;
+    RETURN assert.ok('End of test.');
 END $$ LANGUAGE plpgsql;
 
 -- TODO: test for `allusers`
@@ -132,7 +132,7 @@ BEGIN
     IF result = false THEN RETURN message; END IF;
 
     -- End of test
-    SELECT assert.ok('End of test.') INTO message; RETURN message;
+    RETURN assert.ok('End of test.');
 END $$ LANGUAGE plpgsql;
 
 CREATE FUNCTION unit_tests.getgrgid_systemgroup()
@@ -170,7 +170,7 @@ BEGIN
     IF result = false THEN RETURN message; END IF;
 
     -- End of test
-    SELECT assert.ok('End of test.') INTO message; RETURN message;
+    RETURN assert.ok('End of test.');
 END $$ LANGUAGE plpgsql;
 
 
@@ -213,7 +213,7 @@ BEGIN
     IF result = false THEN RETURN message; END IF;
 
     -- End of test
-    SELECT assert.ok('End of test.') INTO message; RETURN message;
+    RETURN assert.ok('End of test.');
 END $$ LANGUAGE plpgsql;
 
 CREATE FUNCTION unit_tests.getgrnam_systemgroup()
@@ -245,7 +245,7 @@ BEGIN
     IF result = false THEN RETURN message; END IF;
 
     -- End of test
-    SELECT assert.ok('End of test.') INTO message; RETURN message;
+    RETURN assert.ok('End of test.');
 END $$ LANGUAGE plpgsql;
 
 /* groups_dyn returns all /auxiliary/ gids
@@ -273,7 +273,7 @@ BEGIN
     IF result = false THEN RETURN message; END IF;
 
     -- End of test
-    SELECT assert.ok('End of test.') INTO message; RETURN message;
+    RETURN assert.ok('End of test.');
 END $$ LANGUAGE plpgsql;
 
 
@@ -296,5 +296,5 @@ BEGIN
     IF result = false THEN RETURN message; END IF;
 
     -- End of test
-    SELECT assert.ok('End of test.') INTO message; RETURN message;
+    RETURN assert.ok('End of test.');
 END $$ LANGUAGE plpgsql;

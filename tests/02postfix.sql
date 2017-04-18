@@ -8,14 +8,13 @@ DECLARE result boolean;
 DECLARE passwd_host text;
 BEGIN
     SELECT host FROM passwd WHERE name = 'testuser' INTO passwd_host;
-    SELECT * FROM assert.is_equal(passwd_host, 'testbox.hashbang.sh') INTO message, result;
 
+    SELECT * FROM assert.is_equal(passwd_host, 'testbox.hashbang.sh') INTO message, result;
     IF result = false THEN RETURN message; END IF;
 
     SELECT host FROM passwd WHERE name = 'testadmin' INTO passwd_host;
     SELECT * FROM assert.is_equal(passwd_host, 'fo0.hashbang.sh') INTO message, result;
-
     IF result = false THEN RETURN message; END IF;
 
-    SELECT assert.ok('End of test.') INTO message; RETURN message;
+    RETURN assert.ok('End of test.');
 END $$ LANGUAGE plpgsql;

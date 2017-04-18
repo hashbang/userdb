@@ -27,9 +27,9 @@ BEGIN
 	"maxUsers": 1000
      }'::jsonb);
     SELECT * FROM assert.is_equal(host_name,'testbox.hashbang.sh') INTO message, result;
-
     IF result = false THEN RETURN message; END IF;
-    SELECT assert.ok('End of test.') INTO message; RETURN message;
+
+    RETURN assert.ok('End of test.');
 END $$ LANGUAGE plpgsql;
 
 
@@ -47,7 +47,7 @@ BEGIN
     SELECT * FROM assert.is_equal(group_gid,  4) INTO message, result;
     IF result = false THEN RETURN message; END IF;
 
-    SELECT assert.ok('End of test.') INTO message; RETURN message;
+    RETURN assert.ok('End of test.');
 END $$ LANGUAGE plpgsql;
 
 
@@ -61,9 +61,9 @@ BEGIN
     insert into passwd (name, host, "homedir","data") values ('testuser', 'testbox.hashbang.sh', '/home/testuser', '{"ssh_keys": [], "shell": "/sbin/nologin"}'::jsonb);
     insert into passwd (name, host, "homedir","data") values ('testuser2', 'testbox.hashbang.sh', '/home/testuser2', '{"ssh_keys": [], "shell": "/bin/sh"}'::jsonb) returning name INTO passwd_name;
     SELECT * FROM assert.is_equal(passwd_name,'testuser2') INTO message, result;
-
     IF result = false THEN RETURN message; END IF;
-    SELECT assert.ok('End of test.') INTO message; RETURN message;
+
+    RETURN assert.ok('End of test.');
 END $$ LANGUAGE plpgsql;
 
 CREATE FUNCTION unit_tests.add_user_to_group()
@@ -87,7 +87,7 @@ BEGIN
     USING (uid) WHERE (gid = 27)
     INTO passwd_name;
     SELECT * FROM assert.is_equal(passwd_name,'testadmin') INTO message, result;
-
     IF result = false THEN RETURN message; END IF;
-    SELECT assert.ok('End of test.') INTO message; RETURN message;
+
+    RETURN assert.ok('End of test.');
 END $$ LANGUAGE plpgsql;

@@ -84,12 +84,13 @@ several reasons:
   can be formalised into a JSON schema and enforced, making the data
   format of user records more interoperable.
 
-
-*NOTE:* It might be possible to enforce the JSON Schema in the database
-        itself. This isn't an immediate goal.
+Corresponding constraints (`data_host` and `data_user`) are generated
+and added to the schema, using [postgres-json-schema] for validation.
 
 *NOTE:* Yes, I'm aware I serialized the JSON Schema as YAML.
         Yes, it's legit.
+
+[postgres-json-schema]: https://github.com/gavinwahl/postgres-json-schema
 
 
 # Permissions

@@ -20,7 +20,7 @@ RETURNS test_result AS $$
 DECLARE message test_result;
 BEGIN
     BEGIN
-        insert into passwd (name, host, "homedir","data") values ('invaliduser', 'testbox.hashbang.sh', '/home/testuser', '{}'::jsonb);
+        insert into passwd (name, host, "data") values ('invaliduser', 'testbox.hashbang.sh', '{}'::jsonb);
     	RETURN assert.fail('Successfully inserted user.');
     EXCEPTION
 	WHEN check_violation THEN

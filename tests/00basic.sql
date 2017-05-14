@@ -58,8 +58,8 @@ DECLARE message test_result;
 DECLARE result boolean;
 DECLARE passwd_name text;
 BEGIN
-    insert into passwd (name, host, "homedir","data") values ('testuser', 'testbox.hashbang.sh', '/home/testuser', '{"ssh_keys": [], "shell": "/sbin/nologin"}'::jsonb);
-    insert into passwd (name, host, "homedir","data") values ('testuser2', 'testbox.hashbang.sh', '/home/testuser2', '{"ssh_keys": [], "shell": "/bin/sh"}'::jsonb) returning name INTO passwd_name;
+    insert into passwd (name, host, "data") values ('testuser', 'testbox.hashbang.sh', '{"ssh_keys": [], "shell": "/sbin/nologin"}'::jsonb);
+    insert into passwd (name, host, "data") values ('testuser2', 'testbox.hashbang.sh', '{"ssh_keys": [], "shell": "/bin/sh"}'::jsonb) returning name INTO passwd_name;
     SELECT * FROM assert.is_equal(passwd_name,'testuser2') INTO message, result;
     IF result = false THEN RETURN message; END IF;
 
@@ -74,8 +74,8 @@ DECLARE message test_result;
 DECLARE result boolean;
 DECLARE passwd_name text;
 BEGIN
-    insert into passwd (name, host, "homedir","data")
-    values ('testadmin', 'fo0.hashbang.sh', '/home/testadmin',
+    insert into passwd (name, host, "data")
+    values ('testadmin', 'fo0.hashbang.sh',
     '{ "name":"Just an admin.", "ssh_keys": [], "shell": "/usr/bin/zsh" }'::jsonb)
     RETURNING uid INTO user_id;
 

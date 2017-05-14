@@ -28,7 +28,6 @@ CREATE TABLE "passwd" (
     DEFAULT nextval('user_id'),
   "name" username_t UNIQUE NOT NULL,
   "host" text NOT NULL REFERENCES hosts (name),
-  "homedir" text NOT NULL,
   "data" jsonb  -- conforms to the user_data.yaml schema
     CHECK(length(data::text) < 1048576) -- max 1M
 );

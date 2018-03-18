@@ -1,13 +1,13 @@
 -- -*- mode: sql; sql-product: postgres -*-
 
 -- hosts table
-CREATE DOMAIN hostname_t text CHECK (
-  VALUE ~ '^([a-z0-9]+\.)+hashbang\.sh$'
+create domain hostname_t text check (
+  value ~ '^([a-z0-9]+\.)+hashbang\.sh$'
 );
 
-CREATE TABLE "hosts" (
-  "name" hostname_t PRIMARY KEY,
-  "maxusers" integer CHECK(maxusers >= 0),
+create table "hosts" (
+  "name" hostname_t primary key,
+  "maxusers" integer check(maxusers >= 0),
   "data" jsonb -- extra data added in the stats answer
                -- conforms to the host_data.yaml schema
 );
@@ -16,34 +16,34 @@ CREATE TABLE "hosts" (
 -- there is an implicit primary group for each user
 -- UID and GID ranges conform to Debian policy:
 --  https://www.debian.org/doc/debian-policy/ch-opersys.html#s9.2.2
-CREATE SEQUENCE user_id MINVALUE 4000 MAXVALUE 59999 NO CYCLE;
+create sequence user_id minvalue 4000 maxvalue 59999 no cycle;
 
-CREATE DOMAIN username_t text CHECK (
-  VALUE ~ '^[a-z][a-z0-9]{0,30}$'
+create domain username_t text check (
+  value ~ '^[a-z][a-z0-9]{0,30}$'
 );
 
-CREATE TABLE "passwd" (
-  "uid" integer PRIMARY KEY
-    CHECK((uid >= 1000 AND uid < 60000) OR (uid > 65535 AND uid < 4294967294))
-    DEFAULT nextval('user_id'),
-  "name" username_t UNIQUE NOT NULL,
-  "host" text NOT NULL REFERENCES hosts (name),
+create table "passwd" (
+  "uid" integer primary key
+    check((uid >= 1000 and uid < 60000) or (uid > 65535 and uid < 4294967294))
+    default nextval('user_id'),
+  "name" username_t unique not null,
+  "host" text not null references hosts (name),
   "data" jsonb  -- conforms to the user_data.yaml schema
-    CHECK(length(data::text) < 1048576) -- max 1M
+    check(length(data::text) < 1048576) -- max 1M
 );
 
 alter sequence user_id owned by passwd.uid;
 
 -- auxiliary groups
-CREATE TABLE "group" (
-  "gid" integer PRIMARY KEY CHECK(gid < 1000 OR (gid >= 60000 AND gid < 65000)),
-  "name" username_t UNIQUE NOT NULL
+create table "group" (
+  "gid" integer primary key check(gid < 1000 or (gid >= 60000 and gid < 65000)),
+  "name" username_t unique not null
 );
 
-CREATE TABLE "aux_groups" (
-  "uid" int4 NOT NULL REFERENCES passwd  (uid) ON DELETE CASCADE,
-  "gid" int4 NOT NULL REFERENCES "group" (gid) ON DELETE CASCADE,
-  PRIMARY KEY ("uid", "gid")
+create table "aux_groups" (
+  "uid" int4 not null references passwd  (uid) on delete cascade,
+  "gid" int4 not null references "group" (gid) on delete cascade,
+  primary key ("uid", "gid")
 );
 
 -- prevent creation/update of a user if the number of users

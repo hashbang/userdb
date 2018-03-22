@@ -3,12 +3,13 @@ SCHEMA_FILES= schema.sql stats.sql                                    \
 	json-schemas.sql.tmp
 YAML_FILES= $(wildcard schemas/data_*.yml)
 
-.PHONY: help develop test install
+.PHONY: help develop test install clean
 
 help:
 	@echo "test    - run tests with in-place PostgreSQL"
 	@echo "develop - Load schema into temporary postgres and launch shell"
 	@echo "install - Setup schemas on local system PostgreSQL"
+	@echo "clean   - Delete generated files"
 
 
 develop: $(SCHEMA_FILES)
@@ -24,3 +25,6 @@ install: $(SCHEMA_FILES)
 
 json-schemas.sql.tmp: json-schemas.py json-schemas.sql $(YAML_FILES)
 	./$<
+
+clean:
+	rm -f json-schemas.sql.tmp

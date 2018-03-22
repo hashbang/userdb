@@ -2,15 +2,15 @@
 
 -- Create the host statistics view
 -- This is what the statistics API endpoint must expose, formated as JSON.
-CREATE VIEW host_statistics AS
-  SELECT name, users, maxusers, data
-    FROM hosts
-    JOIN (
-            SELECT COUNT(1) AS users,
-	           host
-              FROM passwd
-          GROUP BY host
+create view host_statistics as
+  select name, users, maxusers, data
+    from hosts
+    join (
+            select count(1) as users,
+             host
+              from passwd
+          group by host
          )
-      AS count
-      ON (count.host = hosts.name)
+      as count
+      on (count.host = hosts.name)
 ;

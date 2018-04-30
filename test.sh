@@ -47,7 +47,7 @@ run pg_ctl -D "${WORKDIR}" start -w -o "      \
 
 PSQL="psql --set ON_ERROR_STOP=1 -h ${WORKDIR} -d postgres"
 
-for file in schema.sql stats.sql                             \
+for file in schema.sql stats.sql username.sql                \
             postgres-json-schema/postgres-json-schema--*.sql \
             json-schemas.sql.tmp; do
     run ${PSQL} -f "$file"

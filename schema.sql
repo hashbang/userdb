@@ -46,9 +46,25 @@ create table "aux_groups" (
   primary key ("uid", "gid")
 );
 
--- prevent creation/update of a user if the number of users
+-- prevent creation/update of a user/host if the number of users
 -- in the group 'users' that have that host
 -- is equal to the maxUsers for that host
+create function check_hosts_for_hosts() returns trigger
+    language plpgsql as $$
+    begin
+        if ((select count(*) from passwd where passwd.host = new.name) <= new.maxusers) then
+            raise foreign_key_violation using message = 'current maxUsers too high for host: '||new.name;
+        end if;
+        return new;
+    end $$;
+create constraint trigger max_users_on_host
+    after update on hosts
+    for each row
+    when (old.maxusers <> new.maxusers)
+    execute procedure check_hosts_for_hosts();
+
+-- prevent creation/update of a user if the number of users
+-- associated to that host is equal to maxUsers
 create function check_max_users() returns trigger
     language plpgsql as $$
     begin

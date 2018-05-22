@@ -78,6 +78,33 @@ create constraint trigger max_users
     after insert or update on passwd
     for each row execute procedure check_max_users();
 
+-- prevent users and groups sharing the same name
+create function check_invalid_name_for_passwd() returns trigger
+    language plpgsql as $$
+    begin
+        if (exists(select 1 from "group" where new.name = name)) then
+            raise check_violation using message = 'group name already exists: '||new.name;
+        end if;
+	return new;
+    end $$;
+create constraint trigger check_name_exists_passwd
+    after insert or update on passwd
+    for each row
+    execute procedure check_invalid_name_for_passwd();
+
+create function check_invalid_name_for_group() returns trigger
+    language plpgsql as $$
+    begin
+        if (exists(select 1 from passwd where new.name = name)) then
+            raise check_violation using message = 'username already exists: '||new.name;
+        end if;
+	return new;
+    end $$;
+create constraint trigger check_name_exists_group
+    after insert or update on "group"
+    for each row
+    execute procedure check_invalid_name_for_group();
+
 -- create role for creating new users
 -- grant only rights to add new users
 create role "create_users";

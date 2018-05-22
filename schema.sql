@@ -105,6 +105,37 @@ create constraint trigger check_name_exists_group
     for each row
     execute procedure check_invalid_name_for_group();
 
+-- prevent users from taking names which are typically reserved
+create table "reserved_usernames" (
+    "name" username_t unique not null
+);
+create function check_reserved_username() returns trigger
+    language plpgsql as $$
+    begin
+        if (exists(select 1 from reserved_usernames where name = new.name)) then
+            raise check_violation using message = 'username reserved: '||new.name;
+        end if;
+        return new;
+    end $$;
+create constraint trigger check_reserved_username
+    after insert on passwd
+    for each row
+    execute procedure check_reserved_username();
+
+-- prevent inserting a reserved username that is already taken by a user
+create function check_taken_username() returns trigger
+    language plpgsql as $$
+    begin
+        if (exists(select 1 from passwd where name = new.name)) then
+            raise check_violation using message = 'A user with that name exists: '||new.name;
+        end if;
+        return new;
+    end $$;
+create constraint trigger check_taken_username
+    after insert on reserved_usernames
+    for each row
+    execute procedure check_taken_username();
+
 -- create role for creating new users
 -- grant only rights to add new users
 create role "create_users";

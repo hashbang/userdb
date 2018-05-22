@@ -4,6 +4,8 @@ SCHEMA_FILES := schema.sql stats.sql reserved.sql               \
 YAML_FILES := $(wildcard schemas/data_*.yml)
 RESERVED_NAMES := $(wildcard reserved/*)
 
+PGDATABASE ?= userdb
+
 .PHONY: help develop test install clean
 
 help:
@@ -20,8 +22,8 @@ test:    $(SCHEMA_FILES)
 	./test.sh
 
 install: $(SCHEMA_FILES) $(RESERVED_NAMES)
-	createdb userdb
-	$(foreach file,$(SCHEMA_FILES),psql -v ON_ERROR_STOP=1 -h localhost -d userdb -f $(file);)
+	createdb '$(PGDATABASE)'
+	$(foreach file,$(SCHEMA_FILES),psql -v ON_ERROR_STOP=1 -d '$(PGDATABASE)' -f $(file);)
 
 
 json-schemas.sql.tmp: json-schemas.py json-schemas.sql $(YAML_FILES)

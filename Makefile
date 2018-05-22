@@ -1,7 +1,8 @@
-SCHEMA_FILES= schema.sql stats.sql usernames.sql                \
+SCHEMA_FILES := schema.sql stats.sql reserved.sql               \
 	$(wildcard postgres-json-schema/postgres-json-schema--*.sql)  \
 	json-schemas.sql.tmp
-YAML_FILES= $(wildcard schemas/data_*.yml)
+YAML_FILES := $(wildcard schemas/data_*.yml)
+RESERVED_NAMES := $(wildcard reserved/*)
 
 .PHONY: help develop test install clean
 
@@ -18,7 +19,7 @@ develop: $(SCHEMA_FILES)
 test:    $(SCHEMA_FILES)
 	./test.sh
 
-install: $(SCHEMA_FILES)
+install: $(SCHEMA_FILES) $(RESERVED_NAMES)
 	createdb userdb
 	$(foreach file,$(SCHEMA_FILES),psql -v ON_ERROR_STOP=1 -h localhost -d userdb -f $(file);)
 

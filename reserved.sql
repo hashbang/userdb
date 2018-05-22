@@ -10,7 +10,8 @@ create function pg_temp.import_reserved() returns void
       select *
       from tmp_table
       where name ~ '^[a-z][a-z0-9]{0,30}$'
-      on conflict do nothing;
+      and not exists(select 1 from reserved_usernames
+	             where reserved_usernames.name = tmp_table.name);
       truncate tmp_table;
     end$$;
 

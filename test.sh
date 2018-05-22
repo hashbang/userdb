@@ -1,4 +1,17 @@
-#!/bin/sh -e
+#!/bin/sh -eu
+
+if [ $# -gt 1 ] || { [ $# -eq 1 ] && [ "$1" != "develop" ]; }; then
+    cat >&2 <<EOF
+Usage: $0 [develop]
+
+'$0' sets up a temporary PostgreSQL database,
+sets up the userdb schema, and runs its testsuite.
+
+When run without options, the return code depends on there being no failed test.
+When run with the 'develop' option, '$0' starts an interactive SQL shell.
+EOF
+    exit 1
+fi
 
 run() {
     normal='\e[0m'
@@ -46,7 +59,7 @@ done
 
 run ${PSQL} -c 'SELECT * FROM unit_tests.begin();' | tee "${WORKDIR}/log"
 
-if [ "$1" != 'develop' ]; then
+if [ $# -ne 1 ]; then
     grep -q 'Failed tests *: 0.' "${WORKDIR}/log"
 else
     if command -v pgcli >/dev/null; then

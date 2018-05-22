@@ -44,14 +44,13 @@ run pg_ctl -D "${WORKDIR}" start -w -o "      \
 	-c listen_addresses=''                \
 "
 
+export PGHOST="${WORKDIR}"
+[ -n "${PGDATABASE+x}" ] || export PGDATABASE="userdb"
 
-PSQL="psql --set ON_ERROR_STOP=1 -h ${WORKDIR} -d postgres"
+# Apply the schema
+make install
 
-for file in schema.sql stats.sql reserved.sql                \
-            postgres-json-schema/postgres-json-schema--*.sql \
-            json-schemas.sql.tmp; do
-    run ${PSQL} -f "$file"
-done
+PSQL="psql --set ON_ERROR_STOP=1"
 
 for file in tests/plpgunit/install/1.install-unit-test.sql tests/*.sql; do
     run ${PSQL} -f "$file"
@@ -63,8 +62,8 @@ if [ $# -ne 1 ]; then
     grep -q 'Failed tests *: 0.' "${WORKDIR}/log"
 else
     if command -v pgcli >/dev/null; then
-	run pgcli -h "${WORKDIR}" -d postgres
+        run pgcli -h "${WORKDIR}"
     else
-	run psql -h "${WORKDIR}" -d postgres
+        run psql -h "${WORKDIR}"
     fi
 fi

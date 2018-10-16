@@ -43,3 +43,31 @@ begin
         return assert.ok('End of test.');
     end;
 end $$ language plpgsql;
+
+create function unit_tests.check_reserved_username()
+returns test_result as $$
+begin
+    insert into reserved_usernames (name) values ('user063');
+    insert into hosts (name, maxusers) values ('063invalid.hashbang.sh', 1);
+    begin
+        insert into passwd (name, host) values ('user063', '063invalid.hashbang.sh');
+        return assert.fail('Successfully registered reserved name');
+    exception
+    when check_violation then
+        return assert.ok('End of test.');
+    end;
+end $$ language plpgsql;
+
+create function unit_tests.check_taken_username()
+returns test_result as $$
+begin
+    insert into hosts (name, maxusers) values ('064invalid.hashbang.sh', 1);
+    insert into passwd (name, host) values ('user064', '064invalid.hashbang.sh');
+    begin
+        insert into reserved_usernames (name) values ('user064');
+        return assert.fail('Successfully reserved a registered name');
+    exception
+    when check_violation then
+        return assert.ok('End of test.');
+    end;
+end $$ language plpgsql;

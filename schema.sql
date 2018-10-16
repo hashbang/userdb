@@ -52,7 +52,7 @@ create table "aux_groups" (
 create function check_hosts_for_hosts() returns trigger
     language plpgsql as $$
     begin
-        if ((select count(*) from passwd where passwd.host = new.name) <= new.maxusers) then
+        if ((select count(*) from passwd where passwd.host = new.name) > new.maxusers) then
             raise foreign_key_violation using message = 'current maxUsers too high for host: '||new.name;
         end if;
         return new;
@@ -69,7 +69,7 @@ create function check_max_users() returns trigger
     language plpgsql as $$
     begin
 	if (tg_op = 'INSERT' or old.host <> new.host) and
-	   (select count(*) from passwd where passwd.host = new.host) >= (select "maxusers" from hosts where hosts.name = new.host) then
+	   (select count(*) from passwd where passwd.host = new.host) > (select "maxusers" from hosts where hosts.name = new.host) then
 	    raise foreign_key_violation using message = 'maxUsers reached for host: '||new.host;
 	end if;
 	return new;

@@ -15,7 +15,7 @@ the [requirements](REQUIREMENTS.md) first.
 This design leans strongly towards consistency of the data, enforced
 as much as possible at the database level.
 
-Part of this appears in the user of foreign keys, range or value constraints,
+Part of this appears in the use of foreign keys, and range or value constraints,
 preventing applications from inserting (or modifying) data that violates those
 constraints.
 

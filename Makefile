@@ -32,3 +32,16 @@ test:
 .PHONY: clean
 clean:
 	rm -rf out
+
+.PHONY: docker-build
+docker-build:
+	docker build -t local/userdb:latest .
+
+.PHONY: docker-run
+docker-run: docker-build
+	docker run -it \
+		-e API_PASSWORD='derp' \
+		-p 5432:5432 local/userdb
+
+.PHONY: docker-test
+docker-test: docker-run

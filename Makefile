@@ -1,4 +1,4 @@
-SCHEMA_FILES := schema.sql stats.sql reserved.sql               \
+SCHEMA_FILES := schema.sql api.sql stats.sql reserved.sql       \
 	$(wildcard postgres-json-schema/postgres-json-schema--*.sql)  \
 	json-schemas.sql.tmp
 YAML_FILES := $(wildcard schemas/data_*.yml)

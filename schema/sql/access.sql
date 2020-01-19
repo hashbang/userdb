@@ -56,8 +56,8 @@ to "ssh_auth";
 
 create user "mail" inherit;
 create role "mail";
-comment on role mail is "Access for MTAs like Postfix"
-alter role 'mail' with login;
+comment on role "mail" is "Access for MTAs like Postfix"
+alter role "mail" with login;
 
 create user "create_users";
 create role "create_users";
@@ -67,9 +67,9 @@ grant usage on sequence "user_id" to "create_users";
 grant select on table public."hosts" to "create_users";
 grant insert on table public."group",public."passwd" to "create_users";
 
-create user nss_pgsql;
-create role nss_pgsql;
-comment on role nss_pgsql is "Intended for nss-pgsql NSS module"
+create user "nss_pgsql";
+create role "nss_pgsql";
+comment on role "nss_pgsql" is "Intended for nss-pgsql NSS module"
 grant select on
     public."passwd",
     public."aux_groups",
@@ -79,4 +79,4 @@ grant select on
     nss_pgsql."groupmember"
     nss_pgsql."groups_dyn",
     nss_pgsql."shadow"
-to nss_pgsql;
+to "nss_pgsql";

@@ -1,3 +1,5 @@
+create role nss_pgsql;
+
 create schema nss_pgsql;
 
 create view nss_pgsql.groupmember as

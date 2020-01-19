@@ -1,67 +1,82 @@
 -- -*- mode: sql; sql-product: postgres -*-
 
-create user postgres;
-create role postgres;
+create user "postgres" inherit;
+create role "postgres";
 comment on role postgres is "Administrator access"
-alter role 'postgres' with
+alter role "postgres" with
+    login,
     superuser,
     createrole,
     createdb,
     replication,
     bypassrls;
 
-create user ssh_auth;
-create role ssh_auth;
-comment on role ssh_auth is "Access for ssh via AuthorizedKeysCommand"
+create user "anon" inherit;
+create role "anon";
+comment on role "anon" is "For anonymous read access by the public"
+alter role "anon" with nologin;
+grant usage on schema v1 to "anon";
+grant usage on sequence user_id to "anon";
+grant select on table
+    public."reserved_usernames",
+    v1."aux_groups",
+    v1."group",
+    v1."hosts",
+    v1."passwd",
+to "anon";
 
-create user mail;
-create role maill;
+create user "api" noinherit;
+create role "api";
+comment on role api is "API role used for API abstractions like PostgREST"
+alter role "api" with login;
+alter view v1."hosts" owner to api;
+alter view v1."passwd" owner to api;
+alter view v1."group" owner to api;
+alter view v1."aux_groups" owner to api;
+grant "anon" to api;
+grant usage on schema public to api;
+grant create,usage on schema v1 to api;
+grant select,insert,update,delete on table
+    public."reserved_usernames",
+    public."hosts",
+    public."passwd",
+    public."aux_groups",
+    public."group",
+to "api";
+
+create user "ssh_auth" inherit;
+create role "ssh_auth";
+comment on role "ssh_auth" is "Access for ssh via AuthorizedKeysCommand"
+alter role "ssh_auth" with login;
+grant select on table
+    public."group",
+    public."passwd",
+    public."aux_groups"
+to "ssh_auth";
+
+create user "mail" inherit;
+create role "mail";
 comment on role mail is "Access for MTAs like Postfix"
+alter role 'mail' with login;
 
-create user anon;
-create role anon;
-alter role 'anon' with nologin;
-grant select on table v1.hosts to anon;
-comment on role anon is "For anonymous read access by the public"
-grant anon to api;
-grant usage on schema v1 to anon;
-grant usage on sequence user_id to anon;
-grant select on table v1.passwd to anon;
-
-create user create_users;
+create user "create_users";
 create role "create_users";
-comment on role api is "Intended for use with user creation systems"
-alter role 'create_users' with nologin;
-grant usage on sequence user_id to "create_users";
-grant insert on table "group",passwd to "create_users";
-grant select on table "hosts" to "create_users";
+comment on role "create_users" is "Intended for use with user creation systems"
+alter role "create_users" with nologin;
+grant usage on sequence "user_id" to "create_users";
+grant select on table public."hosts" to "create_users";
+grant insert on table public."group",public."passwd" to "create_users";
 
 create user nss_pgsql;
 create role nss_pgsql;
-comment on role api is "Intended for nss-pgsql NSS module"
-grant select on nss_pgsql.groupmember to nss_pgsql;
-grant select on nss_pgsql.passwd to nss_pgsql;
-grant select on nss_pgsql."group" to nss_pgsql;
-grant select on nss_pgsql.groups_dyn to nss_pgsql;
-grant select on nss_pgsql.shadow to nss_pgsql;
-
-create user api noinherit;
-comment on role api is "API role used for API abstractions like PostgREST"
-alter view v1.hosts owner to api;
-alter view v1.passwd owner to api;
-alter view v1."group" owner to api;
-alter view v1.aux_groups owner to api;
-grant usage on schema public to api;
-grant create,usage on schema v1 to api;
-grant select on table v1."group" to anon;
-grant select on table v1.aux_groups to anon;
-grant select,insert,update,delete on table public."group" to api;
-grant select,insert,update,delete on table public.hosts to api;
-grant select,insert,update,delete on table public.passwd to api;
-grant select,insert,update,delete on table public.aux_groups to api;
-grant select,insert,update,delete on table public.reserved_usernames to api;
-
--- Current User (Probably no longer needed)
--- create schema v1 authorization current_user;
--- grant api to current_user;
--- revoke api from current_user;
+comment on role nss_pgsql is "Intended for nss-pgsql NSS module"
+grant select on
+    public."passwd",
+    public."aux_groups",
+    public."group",
+    nss_pgsql."passwd",
+    nss_pgsql."group",
+    nss_pgsql."groupmember"
+    nss_pgsql."groups_dyn",
+    nss_pgsql."shadow"
+to nss_pgsql;

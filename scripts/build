@@ -8,7 +8,7 @@ order = 1
 
 if not os.path.exists(out_dir): os.makedirs(out_dir)
 
-for each in ('schema', 'stats', 'reserved', 'nss', 'api' ):
+for each in ('schema', 'stats', 'reserved', 'nss', 'api', 'access'):
     shutil.copyfile(
         '{}/sql/{}.sql'.format(in_dir, each),
         '{}/{}-{}.sql'.format(out_dir, order, each)

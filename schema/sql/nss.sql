@@ -1,5 +1,3 @@
-create role nss_pgsql;
-
 create schema nss_pgsql;
 
 create view nss_pgsql.groupmember as
@@ -13,7 +11,6 @@ create view nss_pgsql.groupmember as
         aux_groups.gid as gid
         from public.passwd inner join public.aux_groups
             on (passwd.uid = aux_groups.uid);
-grant select on nss_pgsql.groupmember to nss_pgsql;
 
 create view nss_pgsql.passwd as
     select
@@ -25,7 +22,6 @@ create view nss_pgsql.passwd as
         uid,
         uid as gid
     from public.passwd;
-grant select on nss_pgsql.passwd to nss_pgsql;
 
 create view nss_pgsql."group" as
     select
@@ -45,7 +41,6 @@ create view nss_pgsql."group" as
                 on (passwd.uid = aux_groups.uid and aux_groups.gid = "group".gid)
         ) as members
     from public."group";
-grant select on nss_pgsql."group" to nss_pgsql;
 
 create view nss_pgsql.groups_dyn as
     select
@@ -53,7 +48,6 @@ create view nss_pgsql.groups_dyn as
         gid
     from public.aux_groups inner join public.passwd
         on (aux_groups.uid = passwd.uid);
-grant select on nss_pgsql.groups_dyn to nss_pgsql;
 
 create view nss_pgsql.shadow as
     select
@@ -67,4 +61,3 @@ create view nss_pgsql.shadow as
         0 as expire,
         0 as flag
     from public.passwd;
-grant select on nss_pgsql.shadow to nss_pgsql;

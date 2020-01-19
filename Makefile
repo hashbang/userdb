@@ -41,6 +41,7 @@ docker-build:
 docker-run: docker-build
 	docker run -it \
 		-e API_PASSWORD='derp' \
+		-e POSTGRES_PASSWORD=password \
 		-p 5432:5432 local/userdb
 
 .PHONY: docker-test

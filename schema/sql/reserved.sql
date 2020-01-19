@@ -3,6 +3,7 @@
 create temp table tmp_table (
 "name" text unique not null
 );
+
 create function pg_temp.import_reserved() returns void
     language plpgsql as $$
     begin
@@ -15,19 +16,47 @@ create function pg_temp.import_reserved() returns void
       truncate tmp_table;
     end$$;
 
--- Aliases in our mail server configuration:
---  https://github.com/hashbang/admin-tools/blob/master/files/postfix/aliases.j2
---
--- This does not include common aliases defined by RFC 2142
-\copy tmp_table (name) from './reserved/aliases';
-select pg_temp.import_reserved();
+-- reserve names in ldpreload.com, RFC2142, and common conventions
+insert into tmp_table (name) values
+    ('mailer-daemon'),
+    ('nobody'),
+    ('root'),
+    ('team'),
+    ('info'),
+    ('marketing'),
+    ('sales'),
+    ('support'),
+    ('abuse'),
+    ('noc'),
+    ('security'),
+    ('postmaster'),
+    ('hostmaster'),
+    ('usenet'),
+    ('news'),
+    ('webmaster'),
+    ('www'),
+    ('uucp'),
+    ('ftp'),
+    ('admin'),
+    ('administrator'),
+    ('autoconfig'),
+    ('broadcasthost'),
+    ('imap'),
+    ('is'),
+    ('isatap'),
+    ('it'),
+    ('localdomain'),
+    ('localhost'),
+    ('mail'),
+    ('mis'),
+    ('noreply'),
+    ('pop'),
+    ('pop3'),
+    ('smtp'),
+    ('ssladmin'),
+    ('ssladministrator'),
+    ('sslwebmaster'),
+    ('sysadmin'),
+    ('wpad');
 
--- List of reserved usernames by Geoffrey Thomas:
---   https://ldpreload.com/blog/names-to-reserve
-\copy tmp_table (name) from './reserved/ldpreload.com';
-select pg_temp.import_reserved();
-
--- Email aliases reserved by RFC 2142:
---  https://www.ietf.org/rfc/rfc2142.txt
-\copy tmp_table (name) from './reserved/rfc2142';
 select pg_temp.import_reserved();

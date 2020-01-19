@@ -3,7 +3,7 @@
 --- Set up roles
 
 create user api noinherit
-    password :'API_PASSWORD'; -- Grab password from psql vars
+    password 'API_PASSWORD'; -- Hardcoded. Change after deployment
 comment on role api is
 $$The api user is used to pivot into other roles.
 

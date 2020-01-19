@@ -8,16 +8,12 @@ order = 1
 
 if not os.path.exists(out_dir): os.makedirs(out_dir)
 
-for each in ('schema', 'api', 'stats', 'reserved', 'nss'):
+for each in ('schema', 'stats', 'reserved', 'nss', 'api' ):
     shutil.copyfile(
         '{}/sql/{}.sql'.format(in_dir, each),
         '{}/{}-{}.sql'.format(out_dir, order, each)
     )
     order += 1
-shutil.copytree(
-    "{}/sql/reserved".format(in_dir),
-    "{}/reserved".format(out_dir)
-)
 
 shutil.copyfile(
     glob('{}/ext/json-schema/postgres*--*.sql'.format(in_dir))[0],

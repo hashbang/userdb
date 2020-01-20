@@ -8,6 +8,20 @@ alter view v1."hosts" owner to api;
 alter view v1."passwd" owner to api;
 alter view v1."group" owner to api;
 alter view v1."aux_groups" owner to api;
+create user "anon" inherit; -- TODO: rename to "api-anon"
+
+comment on role "anon" is $$Internal anonymous read access for API$$;
+alter role "anon" with nologin;
+grant usage on schema v1 to "anon";
+grant usage on sequence user_id to "anon";
+grant select on table
+    public."reserved_usernames",
+    v1."aux_groups",
+    v1."group",
+    v1."hosts",
+    v1."passwd"
+to "anon";
+
 grant "anon" to api;
 grant usage on schema public to api;
 grant create,usage on schema v1 to api;
@@ -18,6 +32,8 @@ grant select,insert,update,delete on table
     public."aux_groups",
     public."group"
 to "api";
+
+
 
 create user "ssh_auth" inherit;
 comment on role "ssh_auth" is

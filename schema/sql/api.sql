@@ -1,12 +1,12 @@
 -- -*- mode: sql; sql-product: postgres -*-
 
---- Set up public API
+create schema v1;
 
 create view v1.hosts as
     select
-        name,
-        maxusers,
-        data,
+        hosts.name,
+        hosts.maxusers,
+        hosts.data
     from public.hosts;
 comment on view v1.hosts is
     $$Contains the hashbang servers$$;
@@ -56,3 +56,16 @@ comment on column v1.aux_groups.uid is
     $$User ID$$;
 comment on column v1.aux_groups.gid is
     $$Group ID$$;
+
+create user "anon" inherit; -- TODO: rename to "api-anon"
+comment on role "anon" is $$Internal anonymous read access for API$$;
+alter role "anon" with nologin;
+grant usage on schema v1 to "anon";
+grant usage on sequence user_id to "anon";
+grant select on table
+    public."reserved_usernames",
+    v1."aux_groups",
+    v1."group",
+    v1."hosts",
+    v1."passwd"
+to "anon";

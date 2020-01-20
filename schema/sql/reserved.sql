@@ -1,7 +1,7 @@
 -- -*- mode: sql; sql-product: postgres -*-
 -- An helper for bulk-importing the data
 create temp table tmp_table (
-"name" text unique not null
+    "name" text unique not null
 );
 
 create function pg_temp.import_reserved() returns void

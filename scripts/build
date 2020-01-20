@@ -11,7 +11,6 @@ sql_names = [
     'nss',
     'api',
     'access',
-    'settings',
 ]
 
 if not os.path.exists(out_dir): os.makedirs(out_dir)

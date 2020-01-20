@@ -3,6 +3,8 @@ NAMESPACE ?= userdb
 .PHONY: help
 help:
 	@echo "build       		 - compile/order all sql files to out directory"
+	@echo "fetch       		 - fetch submodules"
+	@echo "fetch-latest      - fetch submodules at latest upstream master refs"
 	@echo "test        		 - run tests with in-place PostgreSQL"
 	@echo "install     		 - Setup schemas on local system PostgreSQL"
 	@echo "clean       		 - Delete generated files"
@@ -17,6 +19,14 @@ help:
 .PHONY: build
 build: clean
 	./scripts/build schema/ out/
+
+.PHONY: fetch
+fetch:
+	git submodule update --init --recursive
+
+.PHONY: fetch-latest
+fetch-latest:
+	git submodule foreach 'git checkout master && git pull'
 
 .PHONY: install
 install:

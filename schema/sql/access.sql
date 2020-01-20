@@ -70,6 +70,7 @@ grant insert on table public."group",public."passwd" to "create_users";
 create user "nss_pgsql";
 create role "nss_pgsql";
 comment on role "nss_pgsql" is "Intended for nss-pgsql NSS module"
+alter role "nss_pgsql" with login
 grant select on
     public."passwd",
     public."aux_groups",

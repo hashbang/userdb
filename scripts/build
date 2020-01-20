@@ -4,21 +4,17 @@ from glob import glob
 
 in_dir = sys.argv[1]
 out_dir = sys.argv[2]
-order = 1
+sql_names = [
+    'schema',
+    'stats',
+    'reserved',
+    'nss',
+    'api',
+    'access',
+    'settings',
+]
 
 if not os.path.exists(out_dir): os.makedirs(out_dir)
-
-for each in ('schema', 'stats', 'reserved', 'nss', 'api', 'access'):
-    shutil.copyfile(
-        '{}/sql/{}.sql'.format(in_dir, each),
-        '{}/{}-{}.sql'.format(out_dir, order, each)
-    )
-    order += 1
-
-shutil.copyfile(
-    glob('{}/ext/json-schema/postgres*--*.sql'.format(in_dir))[0],
-    '{}/{}-json-schemas-base.sql'.format(out_dir, order)
-)
 
 with open('{}/sql/json-schemas.sql'.format(in_dir), 'r') as in_file:
     data = in_file.read()
@@ -29,5 +25,20 @@ for name in ('user', 'host'):
         assert("$$" not in json_data)
         data = data.replace('{data_%s}' % name, json_data)
 
-with open('{}/{}-json-schemas.sql'.format(out_dir, order + 1), 'w') as outfile:
+order = 1
+shutil.copyfile(
+    glob('{}/ext/json-schema/postgres*--*.sql'.format(in_dir))[0],
+    '{}/{}-json-schemas-base.sql'.format(out_dir, order)
+)
+order += 1
+with open('{}/{}-json-schemas.sql'.format(out_dir, order), 'w') as outfile:
     outfile.write(data)
+
+for each in sql_names:
+    order += 1
+    shutil.copyfile(
+        '{}/sql/{}.sql'.format(in_dir, each),
+        '{}/{}-{}.sql'.format(out_dir, order, each)
+    )
+
+

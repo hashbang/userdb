@@ -9,4 +9,5 @@ ADD . /userdb
 RUN /userdb/scripts/build /userdb/schema /out
 
 FROM postgres@sha256:${POSTGRES_REF}
+ENV POSTGRES_DB="userdb"
 COPY --from=schema /out /docker-entrypoint-initdb.d/

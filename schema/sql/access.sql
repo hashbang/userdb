@@ -18,10 +18,9 @@ grant select,insert,update,delete on table
     public."group"
 to "api";
 
-create user "api-anon";
+create role "api-anon";
 comment on role "api-anon" is
     $$Internal api-anonymous read access for API$$;
-alter role "api-anon" with nologin;
 grant usage on schema v1 to "api-anon";
 grant usage on sequence user_id to "api-anon";
 grant select on table
@@ -33,10 +32,9 @@ grant select on table
 to "api-anon";
 grant "api-anon" to "api";
 
-create user "api-user-create";
+create role "api-user-create";
 comment on role "api-user-create" is
     $$Intended for use with user creation systems$$;
-alter role "api-user-create" with nologin;
 grant usage on sequence "user_id" to "api-user-create";
 grant select on table public."hosts" to "api-user-create";
 grant insert on table public."group",public."passwd" to "api-user-create";

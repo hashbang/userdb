@@ -32,8 +32,7 @@ load test_helper
 	echo "$output" | grep "permission denied"
 }
 
-@test "Can create user with valid JWT token via PostgREST" {
-
+@test "Can not create user with invalid host and valid auth via PostgREST" {
 
 	run curl http://userdb-postgrest:3000/passwd \
 		-H "Content-Type: application/json" \
@@ -50,5 +49,5 @@ load test_helper
 			}
 			EOF
 	[ "$status" -eq 0 ]
-	echo "$output" | grep "account created"
+	echo "$output" | grep "violates foreign key constraint"
 }

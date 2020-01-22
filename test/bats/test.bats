@@ -37,7 +37,7 @@ load test_helper
 
 	run curl http://userdb-postgrest:3000/passwd \
 		-H "Content-Type: application/json" \
-		-H "Authorization: Bearer $(jwt_token 'create-user')" \
+		-H "Authorization: Bearer $(jwt_token 'api-user-create')" \
 		-X POST \
 		--data-binary @- <<-EOF
 			{

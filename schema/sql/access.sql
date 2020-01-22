@@ -39,6 +39,7 @@ grant usage on sequence "user_id" to "api-user-create";
 grant select on table public."hosts" to "api-user-create";
 grant insert on table public."passwd" to "api-user-create";
 grant "api-user-create" to "api";
+grant "api-anon" to "api-user-create";
 
 create user "ssh_auth" inherit;
 comment on role "ssh_auth" is

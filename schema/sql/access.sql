@@ -33,14 +33,14 @@ grant select on table
 to "api-anon";
 grant "api-anon" to "api";
 
-create user "api-auth";
-comment on role "api-auth" is
+create user "api-user-create";
+comment on role "api-user-create" is
     $$Intended for use with user creation systems$$;
-alter role "api-auth" with nologin;
-grant usage on sequence "user_id" to "api-auth";
-grant select on table public."hosts" to "api-auth";
-grant insert on table public."group",public."passwd" to "api-auth";
-grant "api-auth" to "api";
+alter role "api-user-create" with nologin;
+grant usage on sequence "user_id" to "api-user-create";
+grant select on table public."hosts" to "api-user-create";
+grant insert on table public."group",public."passwd" to "api-user-create";
+grant "api-user-create" to "api";
 
 create user "ssh_auth" inherit;
 comment on role "ssh_auth" is

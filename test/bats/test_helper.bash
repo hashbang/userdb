@@ -8,12 +8,13 @@ teardown(){
     echo "teardown"
 }
 
-jwt_encode(){
+base64_url_encode(){
 	data=${1?}
 	echo -n "${data}" \
 	| openssl base64 -e -A \
-	| sed s/\+/-/ \
-	| sed -E s/=+$//
+	| sed 's/\+/-/g' \
+	| sed 's/\//_/g' \
+	| sed -E 's/=+$//'
 }
 
 jwt_sig(){
@@ -23,16 +24,17 @@ jwt_sig(){
 		echo -n "${data}" \
 		| openssl dgst -sha256 -hmac "${secret}" -binary \
 		| openssl base64 -e -A \
-		| sed s/\+/-/ \
-		| sed -E s/=+$// \
+		| sed 's/\+/-/g' \
+		| sed 's/\//_/g' \
+		| sed -E 's/=+$//'
 	)
 	echo -n "${data}"."${signature}"
 }
 
 jwt_token(){
 	role=${1:-role}
-	secret=${2:-test_secret}
-	header="$(jwt_encode '{"alg":"HS256"}')"
-	payload="$(jwt_encode '{"role":"'"${role}"'"}')"
+	secret=${2:-a_test_only_postgrest_jwt_secret}
+	header="$(base64_url_encode '{"alg":"HS256"}')"
+	payload="$(base64_url_encode '{"role":"'"${role}"'"}')"
 	echo -n "$(jwt_sig "${header}.${payload}" "${secret}")"
 }

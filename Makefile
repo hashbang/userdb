@@ -87,9 +87,9 @@ docker-start:
 		--name $(NAMESPACE)-postgrest \
 		--network=$(NAMESPACE) \
 		--env PGRST_DB_URI="postgres://postgres@$(NAMESPACE)/userdb" \
-  		--env PGRST_DB_ANON_ROLE="api-anon" \
   		--env PGRST_DB_SCHEMA="v1" \
-  		--env PGRST_JWT_SECRET="test_secret" \
+  		--env PGRST_DB_ANON_ROLE="api-anon" \
+  		--env PGRST_JWT_SECRET="a_test_only_postgrest_jwt_secret" \
 		local/$(NAMESPACE)-postgrest
 
 .PHONY: docker-stop

@@ -37,7 +37,7 @@ comment on role "api-user-create" is
     $$Intended for use with user creation systems$$;
 grant usage on sequence "user_id" to "api-user-create";
 grant select on table public."hosts" to "api-user-create";
-grant insert on table public."group",public."passwd" to "api-user-create";
+grant insert on table public."passwd" to "api-user-create";
 grant "api-user-create" to "api";
 
 create user "ssh_auth" inherit;

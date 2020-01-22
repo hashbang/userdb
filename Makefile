@@ -17,7 +17,7 @@ help:
 	@echo "docker-test-shell - run shell from a test container"
 
 .PHONY: build
-build: clean
+build: clean fetch
 	./scripts/build schema/ out/
 
 .PHONY: fetch
@@ -59,7 +59,7 @@ clean: docker-clean
 	rm -rf out
 
 .PHONY: docker-build
-docker-build:
+docker-build: fetch
 	docker build -t local/$(NAMESPACE):latest .
 	docker build \
 		--build-arg=POSTGREST_VERSION=v6.0.2 \

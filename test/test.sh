@@ -24,7 +24,7 @@ until pg_isready; do
 	sleep 1;
 done;
 
-for file in plpgunit/install/1.install-unit-test.sql *.sql; do
+for file in sql/plpgunit/install/1.install-unit-test.sql sql/*.sql; do
 	run ${psql} -f "${file}"
 done
 
@@ -33,3 +33,5 @@ run ${psql} -c "\
 	SELECT * FROM unit_tests.begin();
 	END TRANSACTION; \
 "
+
+run bats bats/test.bats

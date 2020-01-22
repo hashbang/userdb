@@ -41,8 +41,18 @@ develop:
 	./scripts/test.sh develop
 
 .PHONY: test
-test:
-	cd /test && ./test/test.sh
+test: \
+	docker-test-build \
+	docker-restart \
+	docker-test \
+	docker-stop
+
+.PHONY: test-shell
+test-shell: \
+	docker-test-build \
+	docker-restart \
+	docker-test-shell \
+	docker-stop
 
 .PHONY: clean
 clean: docker-clean
@@ -51,6 +61,13 @@ clean: docker-clean
 .PHONY: docker-build
 docker-build:
 	docker build -t local/$(NAMESPACE):latest .
+	docker build \
+		--build-arg=POSTGREST_VERSION=v6.0.2 \
+		-t local/$(NAMESPACE)-postgrest \
+		modules/postgrest/docker/
+
+.PHONY: docker-restart
+docker-restart: docker-stop docker-start
 
 .PHONY: docker-start
 docker-start:
@@ -61,14 +78,25 @@ docker-start:
 		--detach=true \
 		--network=$(NAMESPACE) \
 		--name=$(NAMESPACE) \
-		-e POSTGRES_PASSWORD=test_password \
 		-p 5432:5432 \
 		local/$(NAMESPACE)
+	docker inspect -f '{{.State.Running}}' $(NAMESPACE)-postgrest 2>/dev/null \
+	|| docker run \
+		--rm \
+		--detach=true \
+		--name $(NAMESPACE)-postgrest \
+		--network=$(NAMESPACE) \
+		--env PGRST_DB_URI="postgres://postgres@$(NAMESPACE)/userdb" \
+  		--env PGRST_DB_ANON_ROLE="anon" \
+  		--env PGRST_DB_SCHEMA="v1" \
+		local/$(NAMESPACE)-postgrest
 
 .PHONY: docker-stop
 docker-stop:
 	docker inspect -f '{{.State.Running}}' $(NAMESPACE) 2>/dev/null \
 	&& docker rm -f $(NAMESPACE) || true
+	docker inspect -f '{{.State.Running}}' $(NAMESPACE)-postgrest 2>/dev/null \
+	&& docker rm -f $(NAMESPACE)-postgrest || true
 
 .PHONY: docker-log
 docker-log:

@@ -40,8 +40,8 @@ load test_helper
 		-X POST \
 		--data-binary @- <<-EOF
 			{
-				"name": "testuser",
-				"host": "de1.hashbang.sh",
+				"name": "testuser42",
+				"host": "invalidbox.hashbang.sh",
 				"data": {
 					"shell": "/bin/bash",
 					"ssh_keys": ["$(cat bats/keys/id_ed25519.pub)"]
@@ -50,4 +50,26 @@ load test_helper
 			EOF
 	[ "$status" -eq 0 ]
 	echo "$output" | grep "violates foreign key constraint"
+}
+
+@test "Can create user with a valid host and valid auth via PostgREST" {
+
+	run curl http://userdb-postgrest:3000/passwd \
+		-H "Content-Type: application/json" \
+		-H "Authorization: Bearer $(jwt_token 'api-user-create')" \
+		-X POST \
+		--data-binary @- <<-EOF
+			{
+				"name": "testuser42",
+				"host": "testbox.hashbang.sh",
+				"data": {
+					"shell": "/bin/bash",
+					"ssh_keys": ["$(cat bats/keys/id_ed25519.pub)"]
+				}
+			}
+			EOF
+	[ "$status" -eq 0 ]
+
+	run curl http://userdb-postgrest:3000/passwd?name=eq.testuser42
+	echo "$output" | grep "testuser42"
 }

@@ -110,6 +110,7 @@ docker-clean: docker-stop
 .PHONY: docker-test
 docker-test: docker-stop docker-build docker-start docker-test-build
 	docker run \
+		-it \
 		--rm \
 		--hostname=$(NAMESPACE)-test \
 		--name $(NAMESPACE)-test \

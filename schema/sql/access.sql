@@ -36,8 +36,7 @@ create role "api-user-create";
 comment on role "api-user-create" is
     $$Intended for use with user creation systems$$;
 grant usage on sequence "user_id" to "api-user-create";
-grant select on table public."hosts" to "api-user-create";
-grant insert on table public."passwd" to "api-user-create";
+grant insert("name","host","data") on table v1."passwd" to "api-user-create";
 grant "api-user-create" to "api";
 grant "api-anon" to "api-user-create";
 

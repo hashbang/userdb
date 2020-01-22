@@ -8,21 +8,6 @@ alter view v1."hosts" owner to api;
 alter view v1."passwd" owner to api;
 alter view v1."group" owner to api;
 alter view v1."aux_groups" owner to api;
-create user "anon" inherit; -- TODO: rename to "api-anon"
-
-comment on role "anon" is $$Internal anonymous read access for API$$;
-alter role "anon" with nologin;
-grant usage on schema v1 to "anon";
-grant usage on sequence user_id to "anon";
-grant select on table
-    public."reserved_usernames",
-    v1."aux_groups",
-    v1."group",
-    v1."hosts",
-    v1."passwd"
-to "anon";
-
-grant "anon" to api;
 grant usage on schema public to api;
 grant create,usage on schema v1 to api;
 grant select,insert,update,delete on table
@@ -33,7 +18,29 @@ grant select,insert,update,delete on table
     public."group"
 to "api";
 
+create user "api-anon";
+comment on role "api-anon" is
+    $$Internal api-anonymous read access for API$$;
+alter role "api-anon" with nologin;
+grant usage on schema v1 to "api-anon";
+grant usage on sequence user_id to "api-anon";
+grant select on table
+    public."reserved_usernames",
+    v1."aux_groups",
+    v1."group",
+    v1."hosts",
+    v1."passwd"
+to "api-anon";
+grant "api-anon" to "api";
 
+create user "api-auth";
+comment on role "api-auth" is
+    $$Intended for use with user creation systems$$;
+alter role "api-auth" with nologin;
+grant usage on sequence "user_id" to "api-auth";
+grant select on table public."hosts" to "api-auth";
+grant insert on table public."group",public."passwd" to "api-auth";
+grant "api-auth" to "api";
 
 create user "ssh_auth" inherit;
 comment on role "ssh_auth" is
@@ -49,14 +56,6 @@ create user "mail" inherit;
 comment on role "mail" is
     $$Access for MTAs like Postfix$$;
 alter role "mail" with login;
-
-create user "create_users";
-comment on role "create_users" is
-    $$Intended for use with user creation systems$$;
-alter role "create_users" with nologin;
-grant usage on sequence "user_id" to "create_users";
-grant select on table public."hosts" to "create_users";
-grant insert on table public."group",public."passwd" to "create_users";
 
 create user "nss_pgsql";
 comment on role "nss_pgsql" is

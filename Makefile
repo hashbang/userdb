@@ -87,7 +87,7 @@ docker-start:
 		--name $(NAMESPACE)-postgrest \
 		--network=$(NAMESPACE) \
 		--env PGRST_DB_URI="postgres://postgres@$(NAMESPACE)/userdb" \
-  		--env PGRST_DB_ANON_ROLE="anon" \
+  		--env PGRST_DB_ANON_ROLE="api-anon" \
   		--env PGRST_DB_SCHEMA="v1" \
 		local/$(NAMESPACE)-postgrest
 

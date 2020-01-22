@@ -24,7 +24,7 @@ load test_helper
 				"host": "de1.hashbang.sh",
 				"data": {
 					"shell": "/bin/bash",
-					"ssh_keys": ["$(cat keys/id_ed25519.pub)"]
+					"ssh_keys": ["$(cat bats/keys/id_ed25519.pub)"]
 				}
 			}
 			EOF

@@ -7,6 +7,8 @@ RUN adduser admin && \
         sudo \
         bats \
         curl \
+        nano \
+        vim-nox \
         postgresql-client &&\
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 

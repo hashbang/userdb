@@ -21,7 +21,7 @@ load test_helper
 		--data-binary @- <<-EOF
 			{
 				"name": "testuser",
-				"host": "de1.hashbang.sh",
+				"host": "test.hashbang.sh",
 				"data": {
 					"shell": "/bin/bash",
 					"ssh_keys": ["$(cat bats/keys/id_ed25519.pub)"]
@@ -61,7 +61,7 @@ load test_helper
 		--data-binary @- <<-EOF
 			{
 				"name": "testuser42",
-				"host": "testbox.hashbang.sh",
+				"host": "test.hashbang.sh",
 				"data": {
 					"shell": "/bin/bash",
 					"ssh_keys": ["$(cat bats/keys/id_ed25519.pub)"]

@@ -1,11 +1,12 @@
 #!/bin/bash
 
 setup(){
-    echo "setup"
+    psql -c "insert into hosts (name,maxusers) values ('test.hashbang.sh','500');";
 }
 
 teardown(){
-    echo "teardown"
+    psql -c "delete from passwd;";
+    psql -c "delete from hosts;";
 }
 
 base64_url_encode(){

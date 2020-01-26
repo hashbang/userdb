@@ -1,3 +1,15 @@
+-- -*- mode: sql; sql-product: postgres -*-
+
+create user "nss_pgsql";
+comment on role "nss_pgsql" is
+    $$Intended for nss-pgsql NSS module$$;
+alter role "nss_pgsql" with login;
+grant select on
+    public."passwd",
+    public."aux_groups",
+    public."group",
+to "nss_pgsql";
+
 create schema nss_pgsql;
 
 create view nss_pgsql.groupmember as
@@ -22,6 +34,7 @@ create view nss_pgsql.passwd as
         uid,
         uid as gid
     from public.passwd;
+grant select on nss_pgsql.passwd to nss_pgsql;
 
 create view nss_pgsql."group" as
     select
@@ -41,6 +54,7 @@ create view nss_pgsql."group" as
                 on (passwd.uid = aux_groups.uid and aux_groups.gid = "group".gid)
         ) as members
     from public."group";
+grant select on nss_pgsql."group" to nss_pgsql;
 
 create view nss_pgsql.groups_dyn as
     select
@@ -48,6 +62,7 @@ create view nss_pgsql.groups_dyn as
         gid
     from public.aux_groups inner join public.passwd
         on (aux_groups.uid = passwd.uid);
+grant select on nss_pgsql.groups_dyn to nss_pgsql;
 
 create view nss_pgsql.shadow as
     select
@@ -61,18 +76,4 @@ create view nss_pgsql.shadow as
         0 as expire,
         0 as flag
     from public.passwd;
-
-create user "nss_pgsql";
-comment on role "nss_pgsql" is
-    $$Intended for nss-pgsql NSS module$$;
-alter role "nss_pgsql" with login;
-grant select on
-    public."passwd",
-    public."aux_groups",
-    public."group",
-    nss_pgsql."passwd",
-    nss_pgsql."group",
-    nss_pgsql."groupmember",
-    nss_pgsql."groups_dyn",
-    nss_pgsql."shadow"
-to "nss_pgsql";
+grant select on nss_pgsql.shadow to nss_pgsql;

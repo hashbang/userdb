@@ -61,3 +61,18 @@ create view nss_pgsql.shadow as
         0 as expire,
         0 as flag
     from public.passwd;
+
+create user "nss_pgsql";
+comment on role "nss_pgsql" is
+    $$Intended for nss-pgsql NSS module$$;
+alter role "nss_pgsql" with login;
+grant select on
+    public."passwd",
+    public."aux_groups",
+    public."group",
+    nss_pgsql."passwd",
+    nss_pgsql."group",
+    nss_pgsql."groupmember",
+    nss_pgsql."groups_dyn",
+    nss_pgsql."shadow"
+to "nss_pgsql";

@@ -7,7 +7,7 @@ alter role "nss_pgsql" with login;
 grant select on
     public."passwd",
     public."aux_groups",
-    public."group",
+    public."group"
 to "nss_pgsql";
 
 create schema nss_pgsql;

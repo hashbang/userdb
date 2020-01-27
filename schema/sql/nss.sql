@@ -1,3 +1,15 @@
+-- -*- mode: sql; sql-product: postgres -*-
+
+create user "nss_pgsql";
+comment on role "nss_pgsql" is
+    $$Intended for nss-pgsql NSS module$$;
+alter role "nss_pgsql" with login;
+grant select on
+    public."passwd",
+    public."aux_groups",
+    public."group"
+to "nss_pgsql";
+
 create schema nss_pgsql;
 
 create view nss_pgsql.groupmember as
@@ -11,7 +23,6 @@ create view nss_pgsql.groupmember as
         aux_groups.gid as gid
         from public.passwd inner join public.aux_groups
             on (passwd.uid = aux_groups.uid);
-grant select on nss_pgsql.groupmember to nss_pgsql;
 
 create view nss_pgsql.passwd as
     select

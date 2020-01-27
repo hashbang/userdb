@@ -135,10 +135,3 @@ create constraint trigger check_taken_username
     after insert on reserved_usernames
     for each row
     execute procedure check_taken_username();
-
--- create role for creating new users
--- grant only rights to add new users
-create role "create_users";
-grant insert on table "group",passwd to "create_users";
-grant select on table "hosts" to "create_users";
-grant usage on sequence user_id to "create_users";

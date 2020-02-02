@@ -47,20 +47,32 @@ create table "aux_groups" (
 );
 
 create type ssh_key_type as enum (
-  "dsa",
-  "rsa",
-  "ecdsa",
-  "ed25519",
-  "u2f"
+  'dsa',
+  'rsa',
+  'ecdsa',
+  'ed25519',
+  'u2f'
 );
 
 create table "ssh_public_key" (
-  "fingerprint" char(64) generated always as sha256(key) stored primary key,
+  "fingerprint" char(64) primary key,
   "type" ssh_key_type not null,
   "key" text unique not null check(length(key) < 1024),
   "comment" text null check (length(comment) < 100),
   "uid" integer references passwd (uid) on delete cascade,
 );
+
+create function ssh_public_key_hash() returns trigger as $$
+begin
+    if tg_op = 'insert' OR tg_op = 'update' then
+        new.fingerprint = sha256(new.key);
+        return new;
+    end if;
+end;
+$$ language plpgsql;
+create trigger ssh_public_key_update
+before insert or update on ssh_public_key
+for each row execute procedure ssh_public_key_hash();
 
 -- prevent creation/update of a user/host if the number of users
 -- in the group 'users' that have that host

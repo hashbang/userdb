@@ -55,7 +55,7 @@ create type ssh_key_type as enum (
 );
 
 create table "ssh_public_key" (
-  "fingerprint" char(64) primary key,
+  "fingerprint" text not null check (length(fingerprint) = 64) primary key,
   "type" ssh_key_type not null,
   "key" text unique not null check(length(key) < 1024),
   "comment" text null check (length(comment) < 100),

@@ -71,7 +71,7 @@ begin
 end;
 $$ language plpgsql;
 create trigger ssh_public_key_update
-before insert or update on ssh_public_key
+before insert or update of key, fingerprint on ssh_public_key
 for each row execute procedure ssh_public_key_hash();
 
 -- prevent creation/update of a user/host if the number of users

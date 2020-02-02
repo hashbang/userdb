@@ -46,6 +46,19 @@ create table "aux_groups" (
   primary key ("uid", "gid")
 );
 
+
+create domain ssh_key_type_t text check (
+  value ~ '^dsa|rsa|ecdsa|ed25519|u2f$'
+);
+
+create table "ssh_public_keys" (
+  "fingerprint" char(64) generated always as sha256(key) stored primary key,
+  "type" ssh_key_type_t not null,
+  "key" varchar(1024) unique not null,
+  "comment" varchar(100) null,
+  "uid" integer references passwd (uid) on delete cascade,
+);
+
 -- prevent creation/update of a user/host if the number of users
 -- in the group 'users' that have that host
 -- is equal to the maxUsers for that host

@@ -91,3 +91,37 @@ BEGIN
 
     RETURN assert.ok('End of test.');
 END $$ LANGUAGE plpgsql;
+
+CREATE FUNCTION unit_tests.add_public_key_to_user()
+RETURNS test_result AS $$
+DECLARE testbox integer;
+DECLARE user_id integer;
+DECLARE message test_result;
+DECLARE result boolean;
+DECLARE passwd_name text;
+BEGIN
+    insert into passwd (name, host, "data")
+    values ('testuser', 'fo0.hashbang.sh',
+    '{ "name":"Just a user.", "shell": "/bin/bash" }'::jsonb)
+    RETURNING uid INTO user_id;
+
+    insert into ssh_public_key (type, key, comment, uid)
+    values (
+        "ed25519",
+        "AAAAC3NzaC1lZDI1NTE5AAAAIKCXEbRyTwfQLhxpt9TMlpZSSGXNwnGmFdpV+yiljd4g",
+        "Some key",
+        user_id
+    );
+
+    SELECT "fingerprint"
+    FROM passwd JOIN ssh_public_key
+    USING (uid) WHERE (name = "testuser")
+    INTO key_fingerprint;
+    SELECT * FROM assert.is_equal(
+        key_fingerprint,
+        '2e4930652ac1d9fcb3578cc624179d5e24edf5e06beb446ef083bff07b246d83'
+    ) INTO message, result;
+    IF result = false THEN RETURN message; END IF;
+
+    RETURN assert.ok('End of test.');
+END $$ LANGUAGE plpgsql;

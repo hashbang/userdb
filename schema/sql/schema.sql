@@ -46,16 +46,19 @@ create table "aux_groups" (
   primary key ("uid", "gid")
 );
 
-
-create domain ssh_key_type_t text check (
-  value ~ '^dsa|rsa|ecdsa|ed25519|u2f$'
+create type ssh_key_type as enum (
+  "dsa",
+  "rsa",
+  "ecdsa",
+  "ed25519",
+  "u2f"
 );
 
-create table "ssh_public_keys" (
+create table "ssh_public_key" (
   "fingerprint" char(64) generated always as sha256(key) stored primary key,
-  "type" ssh_key_type_t not null,
-  "key" varchar(1024) unique not null,
-  "comment" varchar(100) null,
+  "type" ssh_key_type not null,
+  "key" text unique not null check(length(key) < 1024),
+  "comment" text null check (length(comment) < 100),
   "uid" integer references passwd (uid) on delete cascade,
 );
 

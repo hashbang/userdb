@@ -64,6 +64,9 @@ create table "ssh_public_key" (
 
 create function ssh_public_key_hash() returns trigger as $$
 begin
+    if new.fingerprint is not null and new.fingerprint != sha256(new.key) then
+        raise exception 'fingerprint does not match expected key';
+    end if;
     if tg_op = 'insert' OR tg_op = 'update' then
         new.fingerprint = sha256(new.key);
         return new;

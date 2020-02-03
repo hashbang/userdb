@@ -1,0 +1,77 @@
+definitions:
+  username:
+    type: string
+    pattern: "^[a-z][a-z0-9]{0,30}$"
+
+  hostname:
+    type: string
+    pattern: "^([a-z0-9]+\.)+hashbang\.sh$"
+
+  captcha:
+    challenge:
+      description: CAPTCHA descriptor
+      type: object
+      required: [challenge, token]
+      properties:
+        challenge:
+          type: string
+          description: Human-readable challenge
+        token:
+          type: string
+          description: Opaque challenge descriptor
+
+    response:
+      description: CAPTCHA solution
+      type: object
+      required: [token, answer]
+      properties:
+        token:
+          type: string
+          description: Opaque challenge descriptor
+        answer:
+          type: string
+          description: Solution of the text-based CAPTCHA
+
+
+links:
+  - description: Request a one-time CAPTCHA
+    href: /captcha
+    method: POST
+    targetSchema: {$ref: "#/definitions/captcha/challenge"}
+    schema:
+      type: object
+      required: [user]
+      properties:
+        user: {$ref: "#/definitions/username"}
+
+  - description: Create a new user
+    href: /user/create
+    method: POST
+    schema:
+      type: object
+      required: [user, host]
+      properties:
+        user: {$ref: "#/definitions/username"}
+        host: {$ref: "#/definitions/hostname"}
+      allOf:
+        - $ref: "#/definitions/captcha/response"
+        - $ref: "data_user.yml"
+
+  - description: Request server infos
+    href: /server/stats
+    method: GET
+    targetSchema:
+      type: object
+      patternProperties:
+        "^([a-z0-9]+\.)+hashbang\.sh$":
+          type: object
+          required: [currentUsers, maxUsers]
+          properties:
+            currentUsers:
+              type: integer
+              minimum: 0
+            maxUsers:
+              type: integer
+              minimum: 0
+          # Include the host_data schema
+          allOf: [{$ref: "data_host.yaml"}]

@@ -2,16 +2,6 @@ $schema: http://json-schema.org/schema#
 title: "#! userdb -- Schema for user records auxiliary data"
 type: object
 properties:
-  ssh_keys:
-    type: array
-    items: {type: string}
-    uniqueItems: True
-    description: SSH keys for the shell servers
   name:
     type: string
     description: "User's name (GECOS)"
-  shell:
-    type: string
-    description: "User's login shell"
-
-required: [ssh_keys, shell]

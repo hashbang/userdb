@@ -1,9 +1,6 @@
 [submodule "tests/plpgunit"]
 	path = test/sql/plpgunit
 	url = https://github.com/mixerp/plpgunit
-[submodule "schemas"]
-	path = schema/json
-	url = https://github.com/hashbang/userdb-schemas.git
 [submodule "postgres-json-schema"]
 	path = schema/ext/json-schema
 	url = https://github.com/gavinwahl/postgres-json-schema.git

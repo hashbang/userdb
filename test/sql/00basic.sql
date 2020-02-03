@@ -58,8 +58,8 @@ DECLARE message test_result;
 DECLARE result boolean;
 DECLARE passwd_name text;
 BEGIN
-    insert into passwd (name, host, "data") values ('testuser', 'testbox.hashbang.sh', '{"ssh_keys": [], "shell": "/sbin/nologin"}'::jsonb);
-    insert into passwd (name, host, "data") values ('testuser2', 'testbox.hashbang.sh', '{"ssh_keys": [], "shell": "/bin/sh"}'::jsonb) returning name INTO passwd_name;
+    insert into passwd (name, host, shell) values ('testuser', 'testbox.hashbang.sh', '/bin/nologin');
+    insert into passwd (name, host, shell) values ('testuser2', 'testbox.hashbang.sh', '/bin/sh') returning name INTO passwd_name;
     SELECT * FROM assert.is_equal(passwd_name,'testuser2') INTO message, result;
     IF result = false THEN RETURN message; END IF;
 
@@ -74,9 +74,8 @@ DECLARE message test_result;
 DECLARE result boolean;
 DECLARE passwd_name text;
 BEGIN
-    insert into passwd (name, host, "data")
-    values ('testadmin', 'fo0.hashbang.sh',
-    '{ "name":"Just an admin.", "ssh_keys": [], "shell": "/usr/bin/zsh" }'::jsonb)
+    insert into passwd (name, host, shell)
+    values ('testadmin', 'fo0.hashbang.sh', '/bin/zsh')
     RETURNING uid INTO user_id;
 
     insert into aux_groups (uid, gid) values (user_id, 27); -- 27 is sudo
@@ -95,14 +94,18 @@ END $$ LANGUAGE plpgsql;
 CREATE FUNCTION unit_tests.add_public_key_to_user()
 RETURNS test_result AS $$
 DECLARE testbox integer;
+DECLARE key_fingerprint text;
 DECLARE user_id integer;
 DECLARE message test_result;
 DECLARE result boolean;
 DECLARE passwd_name text;
 BEGIN
-    insert into passwd (name, host, "data")
-    values ('testuser', 'fo0.hashbang.sh',
-    '{ "name":"Just a user.", "shell": "/bin/bash" }'::jsonb)
+    insert into passwd (name, host, shell)
+    values (
+        'testuser',
+        'fo0.hashbang.sh',
+        '/bin/bash'
+    )
     RETURNING uid INTO user_id;
 
     insert into ssh_public_key (type, key, comment, uid)

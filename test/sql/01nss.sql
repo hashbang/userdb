@@ -34,7 +34,7 @@ BEGIN
     SELECT * FROM assert.is_equal(user_home, '/home/testadmin') INTO message, result;
     IF result = false THEN RETURN message; END IF;
 
-    SELECT * FROM assert.is_equal(user_shell, '/usr/bin/zsh') INTO message, result;
+    SELECT * FROM assert.is_equal(user_shell, '/bin/zsh') INTO message, result;
     IF result = false THEN RETURN message; END IF;
 
     SELECT * FROM assert.is_equal(user_uid, user_gid) INTO message, result;
@@ -80,7 +80,7 @@ BEGIN
     SELECT * FROM assert.is_equal(user_home, '/home/testadmin') INTO message, result;
     IF result = false THEN RETURN message; END IF;
 
-    SELECT * FROM assert.is_equal(user_shell, '/usr/bin/zsh') INTO message, result;
+    SELECT * FROM assert.is_equal(user_shell, '/bin/zsh') INTO message, result;
     IF result = false THEN RETURN message; END IF;
 
     SELECT * FROM assert.is_equal(user_uid, user_gid) INTO message, result;

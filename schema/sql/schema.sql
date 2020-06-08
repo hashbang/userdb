@@ -19,7 +19,7 @@ create table "hosts" (
 create sequence user_id minvalue 4000 maxvalue 59999 no cycle;
 
 create domain username_t text check (
-  value ~ '^[a-z][a-z0-9]{0,30}$'
+  value ~ '^[a-z][a-z0-9]{1,30}$'
 );
 
 create table "passwd" (

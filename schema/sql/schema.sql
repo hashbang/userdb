@@ -27,6 +27,7 @@ create table "passwd" (
     check((uid >= 1000 and uid < 60000) or (uid > 65535 and uid < 4294967294))
     default nextval('user_id'),
   "name" username_t unique not null,
+  "created_at" timestamptz default now(),
   "host" text not null references hosts (name),
   "data" jsonb  -- conforms to the user_data.yaml schema
     check(length(data::text) < 1048576) -- max 1M

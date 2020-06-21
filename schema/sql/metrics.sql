@@ -1,11 +1,20 @@
+-- label_value can be any sequence of UTF-8 characters, but the backslash (\),
+-- double-quote ("), and line feed (\n) characters have to be escaped as \\,
+-- \", and \n, respectively.
+create function escape_label(text) returns text
+    language sql as $$
+    select regexp_replace($1, E'[\\"\n]', '\\\&', 'g');
+    $$
+    immutable;
+
 create view v1.metrics as
     select 'hosts.count' as metric, count(*) as "value" from hosts
     union select 'passwd.count' as metric, count(*) as "value" from passwd
-    union select 'passwd.count{shell="' || (data->>'shell') || '"}' as metric, count(*) as "value" from passwd
+    union select 'passwd.count{shell="' || escape_label(data->>'shell') || '"}' as metric, count(*) as "value" from passwd
         group by data->>'shell'
-    union select 'passwd.count{host="' || host || '"}' as metric, count(*) as "value" from passwd
+    union select 'passwd.count{host="' || escape_label(host) || '"}' as metric, count(*) as "value" from passwd
         group by host
-    union select 'groups.count{group="' || "group".name || '"}' as metric, count(*) as "value" from aux_groups
+    union select 'groups.count{group="' || escape_label("group".name) || '"}' as metric, count(*) as "value" from aux_groups
         join "group" on "group".gid = aux_groups.gid
         group by "group".name;
 alter view v1."metrics" owner to api;

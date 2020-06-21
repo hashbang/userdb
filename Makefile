@@ -51,7 +51,7 @@ test-shell: \
 	docker-stop
 
 .PHONY: clean
-clean: docker-clean
+clean:
 	rm -rf out
 
 .PHONY: docker-build

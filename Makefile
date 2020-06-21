@@ -30,11 +30,7 @@ fetch-latest:
 
 .PHONY: install
 install:
-	createdb $(NAMESPACE)
-	$(foreach file,
-		$(wildcard out/*.sql),
-		psql -v ON_ERROR_STOP=1 -d $(NAMESPACE) -f $(file);
-	)
+	$(foreach file,$(wildcard out/*.sql),psql -v ON_ERROR_STOP=1 -f $(file);)
 
 .PHONY: develop
 develop:

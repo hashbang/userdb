@@ -8,13 +8,13 @@ create function escape_label(text) returns text
     immutable;
 
 create view v1.metrics as
-    select 'hosts.count' as metric, count(*) as "value" from hosts
-    union select 'passwd.count' as metric, count(*) as "value" from passwd
-    union select 'passwd.count{shell="' || escape_label(data->>'shell') || '"}' as metric, count(*) as "value" from passwd
+    select 'hosts_count' as metric, count(*) as "value" from hosts
+    union select 'passwd_count' as metric, count(*) as "value" from passwd
+    union select 'passwd_shell_count{shell="' || escape_label(data->>'shell') || '"}' as metric, count(*) as "value" from passwd
         group by data->>'shell'
-    union select 'passwd.count{host="' || escape_label(host) || '"}' as metric, count(*) as "value" from passwd
+    union select 'passwd_host_count{host="' || escape_label(host) || '"}' as metric, count(*) as "value" from passwd
         group by host
-    union select 'groups.count{group="' || escape_label("group".name) || '"}' as metric, count(*) as "value" from aux_groups
+    union select 'groups_count{group="' || escape_label("group".name) || '"}' as metric, count(*) as "value" from aux_groups
         join "group" on "group".gid = aux_groups.gid
         group by "group".name;
 alter view v1."metrics" owner to api;

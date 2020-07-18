@@ -68,7 +68,8 @@ create type ssh_key_type as enum (
 );
 
 create table "ssh_public_key" (
-  "fingerprint" text not null primary key check (length(fingerprint) = 44),
+  "fingerprint" text not null primary key check (length(fingerprint) = 64),
+  "base64_fingerprint" text not null check (length(base64_fingerprint) = 44),
   "type" ssh_key_type not null,
   "key" text unique not null check(length(key) < 1024),
   "comment" text null check (length(comment) < 100),
@@ -76,11 +77,18 @@ create table "ssh_public_key" (
 );
 
 create function ssh_public_key_hash() returns trigger as $$
+declare
+    key_fp bytea;
 begin
-    if new.fingerprint is not null and new.fingerprint != encode(sha256(decode(new.key, 'base64')), 'base64') then
+    key_fp = sha256(decode(new.key, 'base64'));
+    if new.fingerprint is not null and new.fingerprint != encode(key_fp, 'hex') then
         raise exception 'fingerprint does not match expected key';
     end if;
-    new.fingerprint = encode(sha256(decode(new.key, 'base64')), 'base64');
+    if new.base64_fingerprint is not null then
+        raise exception 'base64_fingerprint should not be null on insert/update';
+    end if;
+    new.fingerprint = encode(key_fp, 'hex');
+    new.base64_fingerprint = encode(key_fp, 'base64');
     return new;
 end;
 $$ language plpgsql;

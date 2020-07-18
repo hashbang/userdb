@@ -116,7 +116,7 @@ BEGIN
     INTO key_fingerprint;
     SELECT * FROM assert.is_equal(
         key_fingerprint,
-	'pGSl2PBDaMhaRiFqQiVTw5F3OWyiPg0uRMgZ2p3FfC0='
+	'a464a5d8f04368c85a46216a422553c39177396ca23e0d2e44c819da9dc57c2d'
     ) INTO message, result;
     IF result = false THEN RETURN message; END IF;
 

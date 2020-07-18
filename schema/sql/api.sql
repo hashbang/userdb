@@ -102,6 +102,7 @@ grant select on table v1."aux_groups" to "api-anon";
 create view v1.ssh_public_key as
     select
         fingerprint,
+        base64_fingerprint,
         type,
         key,
         comment,
@@ -110,7 +111,9 @@ create view v1.ssh_public_key as
 comment on view v1.ssh_public_key is
     $$SSH public keys for users$$;
 comment on column v1.ssh_public_key.fingerprint is
-    $$64-byte fingerprint for public key$$;
+    $$Hex fingerprint for public key$$;
+comment on column v1.ssh_public_key.base64_fingerprint is
+    $$Base64 fingerprint for public key$$;
 comment on column v1.ssh_public_key.type is
     $$Type of SSH key (dsa/rsa/ecdsa/ed25519/u2f)$$;
 comment on column v1.ssh_public_key.key is

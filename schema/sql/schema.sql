@@ -59,15 +59,16 @@ create table "aux_groups" (
 );
 
 create type ssh_key_type as enum (
-  'dsa',
-  'rsa',
-  'ecdsa',
-  'ed25519',
-  'u2f'
+  'ssh-dsa',
+  'ssh-rsa',
+  'ssh-ecdsa',
+  'ssh-ed25519',
+  'sk-ecdsa-sha2-nistp256@openssh.com' -- FIDO/U2F
+  -- TODO ED25519 FIDO/U2F keys
 );
 
 create table "ssh_public_key" (
-  "fingerprint" text not null primary key check (length(fingerprint) = 64),
+  "fingerprint" text not null primary key check (length(fingerprint) = 44),
   "type" ssh_key_type not null,
   "key" text unique not null check(length(key) < 1024),
   "comment" text null check (length(comment) < 100),
@@ -76,13 +77,11 @@ create table "ssh_public_key" (
 
 create function ssh_public_key_hash() returns trigger as $$
 begin
-    if new.fingerprint is not null and new.fingerprint != sha256(new.key) then
+    if new.fingerprint is not null and new.fingerprint != encode(sha256(decode(new.key, 'base64')), 'base64') then
         raise exception 'fingerprint does not match expected key';
     end if;
-    if tg_op = 'insert' OR tg_op = 'update' then
-        new.fingerprint = sha256(new.key);
-        return new;
-    end if;
+    new.fingerprint = encode(sha256(decode(new.key, 'base64')), 'base64');
+    return new;
 end;
 $$ language plpgsql;
 create trigger ssh_public_key_update

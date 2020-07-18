@@ -74,8 +74,8 @@ DECLARE message test_result;
 DECLARE result boolean;
 DECLARE passwd_name text;
 BEGIN
-    insert into passwd (name, host, shell)
-    values ('testadmin', 'fo0.hashbang.sh', '/bin/zsh')
+    insert into passwd (name, host, shell, data)
+    values ('testadmin', 'fo0.hashbang.sh', '/bin/zsh', '{"name": "Just an admin."}')
     RETURNING uid INTO user_id;
 
     insert into aux_groups (uid, gid) values (user_id, 27); -- 27 is sudo
@@ -100,29 +100,23 @@ DECLARE message test_result;
 DECLARE result boolean;
 DECLARE passwd_name text;
 BEGIN
-    insert into passwd (name, host, shell)
-    values (
-        'testuser',
-        'fo0.hashbang.sh',
-        '/bin/bash'
-    )
-    RETURNING uid INTO user_id;
+    select "uid" from passwd where name = 'testuser' into user_id;
 
     insert into ssh_public_key (type, key, comment, uid)
     values (
-        "ed25519",
-        "AAAAC3NzaC1lZDI1NTE5AAAAIKCXEbRyTwfQLhxpt9TMlpZSSGXNwnGmFdpV+yiljd4g",
-        "Some key",
+        'ssh-ed25519',
+        'AAAAC3NzaC1lZDI1NTE5AAAAIKCXEbRyTwfQLhxpt9TMlpZSSGXNwnGmFdpV+yiljd4g',
+        'Some key',
         user_id
     );
 
     SELECT "fingerprint"
     FROM passwd JOIN ssh_public_key
-    USING (uid) WHERE (name = "testuser")
+    USING (uid) WHERE (name = 'testuser')
     INTO key_fingerprint;
     SELECT * FROM assert.is_equal(
         key_fingerprint,
-        '2e4930652ac1d9fcb3578cc624179d5e24edf5e06beb446ef083bff07b246d83'
+	'pGSl2PBDaMhaRiFqQiVTw5F3OWyiPg0uRMgZ2p3FfC0='
     ) INTO message, result;
     IF result = false THEN RETURN message; END IF;
 

@@ -10,7 +10,8 @@ grant select,insert,update,delete on table
     public."hosts",
     public."passwd",
     public."aux_groups",
-    public."group"
+    public."group",
+    public."ssh_public_key"
 to "api";
 
 create role "api-anon";
@@ -53,6 +54,7 @@ create view v1.passwd as
         uid,
         name,
         host,
+        shell,
         data
     from public.passwd;
 comment on view v1.passwd is
@@ -61,6 +63,8 @@ comment on column v1.passwd.uid is
     $$User's unique ID$$;
 comment on column v1.passwd.host is
     $$User's 'home' host$$;
+comment on column v1.passwd.shell is
+    $$User's configured shell$$;
 comment on column v1.passwd.data is
     $$Extra user data$$;
 alter view v1."passwd" owner to api;
@@ -94,3 +98,26 @@ comment on column v1.aux_groups.gid is
     $$Group ID$$;
 alter view v1."aux_groups" owner to api;
 grant select on table v1."aux_groups" to "api-anon";
+
+create view v1.ssh_public_key as
+    select
+        fingerprint,
+        type,
+        key,
+        comment,
+        uid
+    from public.ssh_public_key;
+comment on view v1.ssh_public_key is
+    $$SSH public keys for users$$;
+comment on column v1.ssh_public_key.fingerprint is
+    $$64-byte fingerprint for public key$$;
+comment on column v1.ssh_public_key.type is
+    $$Type of SSH key (dsa/rsa/ecdsa/ed25519/u2f)$$;
+comment on column v1.ssh_public_key.key is
+    $$Public key formatted as OpenSSH public key format$$;
+comment on column v1.ssh_public_key.comment is
+    $$Comment from the third field of the OpenSSH public key format$$;
+comment on column v1.ssh_public_key.uid is
+    $$User ID the key is currently linked to$$;
+alter view v1."ssh_public_key" owner to api;
+grant select on table v1."ssh_public_key" to "api-anon";

@@ -124,3 +124,58 @@ comment on column v1.ssh_public_key.uid is
     $$User ID the key is currently linked to$$;
 alter view v1."ssh_public_key" owner to api;
 grant select on table v1."ssh_public_key" to "api-anon";
+
+-- User signup
+create view v1.signup as
+    select
+        p.name as name,
+        p.host as host,
+        p.uid as uid,
+        array_agg(keys.type || ' ' || keys.key) as keys,
+        p.shell as shell
+    from
+        public.passwd p
+        left join public.ssh_public_key keys on p.uid = keys.uid
+    group by p.name, p.host, p.uid, p.shell;
+comment on view v1.signup is
+    $$Route for POSTable signup$$;
+comment on column v1.signup.name is
+    $$Username$$;
+comment on column v1.signup.host is
+    $$User's default home system$$;
+comment on column v1.signup.keys is
+    $$User's raw SSH keys$$;
+comment on column v1.signup.shell is
+    $$User's default shell$$;
+
+create function signup() returns trigger as $$
+declare
+    new_user_id int;
+    temp_key_type text;
+    temp_key_value text;
+    temp_key_comment text;
+    key text;
+begin
+    insert into public.passwd (name, host, shell)
+        values (new.name, new.host, new.shell)
+        returning uid into new_user_id;
+    for key in select * from unnest(new.keys)
+    loop
+        temp_key_type = split_part(key, ' ', 1);
+        temp_key_value = split_part(key, ' ', 2);
+        temp_key_comment = split_part(key, ' ', 3);
+        insert into public.ssh_public_key (type, key, comment)
+            values (temp_key_type::ssh_key_type, temp_key_value, temp_key_comment);
+    end loop;
+    return new;
+end
+$$ language plpgsql security definer;
+
+create trigger signup
+    instead of insert on v1.signup
+    for each row
+    execute procedure signup();
+
+alter view v1."signup" owner to api;
+grant select on table v1."signup" to "api-anon";
+grant insert("name", "host", "shell", "keys") on table v1."signup" to "api-anon";

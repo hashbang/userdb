@@ -178,4 +178,4 @@ create trigger signup
 
 alter view v1."signup" owner to api;
 grant select on table v1."signup" to "api-anon";
-grant insert("name", "host", "shell", "keys") on table v1."signup" to "api-anon";
+grant insert("name", "host", "shell", "keys") on table v1."signup" to "api-create-user";

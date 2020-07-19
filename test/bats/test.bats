@@ -73,3 +73,23 @@ load test_helper
 	run curl http://userdb-postgrest:3000/passwd?name=eq.testuser42
 	echo "$output" | grep "testuser42"
 }
+
+@test "Can create user with a valid host and and SSH key via PostgREST" {
+
+	run curl http://userdb-postgrest:3000/signup \
+		-H "Content-Type: application/json" \
+		-H "Authorization: Bearer $(jwt_token 'api-user-create')" \
+		-X POST \
+		--data-binary @- <<-EOF
+			{
+				"name": "testuser43",
+				"host": "test.hashbang.sh",
+				"shell": "/bin/zsh",
+				"keys": ["$(cat bats/keys/id_ed25519.pub)"]
+			}
+			EOF
+	[ "$status" -eq 0 ]
+
+	run curl http://userdb-postgrest:3000/passwd?name=eq.testuser43
+	echo "$output" | grep "testuser43"
+}

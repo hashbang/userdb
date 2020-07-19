@@ -164,8 +164,8 @@ begin
         temp_key_type = split_part(key, ' ', 1);
         temp_key_value = split_part(key, ' ', 2);
         temp_key_comment = split_part(key, ' ', 3);
-        insert into public.ssh_public_key (type, key, comment)
-            values (temp_key_type::ssh_key_type, temp_key_value, temp_key_comment);
+        insert into public.ssh_public_key (type, key, comment, uid)
+            values (temp_key_type::ssh_key_type, temp_key_value, temp_key_comment, new_user_id);
     end loop;
     return new;
 end
@@ -178,4 +178,4 @@ create trigger signup
 
 alter view v1."signup" owner to api;
 grant select on table v1."signup" to "api-anon";
-grant insert("name", "host", "shell", "keys") on table v1."signup" to "api-create-user";
+grant insert("name", "host", "shell", "keys") on table v1."signup" to "api-user-create";

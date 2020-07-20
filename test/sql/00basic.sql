@@ -58,7 +58,7 @@ DECLARE message test_result;
 DECLARE result boolean;
 DECLARE passwd_name text;
 BEGIN
-    insert into passwd (name, host, shell) values ('testuser', 'testbox.hashbang.sh', '/bin/nologin');
+    insert into passwd (name, host, shell) values ('testuser', 'testbox.hashbang.sh', '/usr/sbin/nologin');
     insert into passwd (name, host, shell) values ('testuser2', 'testbox.hashbang.sh', '/bin/sh') returning name INTO passwd_name;
     SELECT * FROM assert.is_equal(passwd_name,'testuser2') INTO message, result;
     IF result = false THEN RETURN message; END IF;
@@ -116,7 +116,7 @@ BEGIN
     INTO key_fingerprint;
     SELECT * FROM assert.is_equal(
         key_fingerprint,
-	'a464a5d8f04368c85a46216a422553c39177396ca23e0d2e44c819da9dc57c2d'
+	'\xa464a5d8f04368c85a46216a422553c39177396ca23e0d2e44c819da9dc57c2d'
     ) INTO message, result;
     IF result = false THEN RETURN message; END IF;
 

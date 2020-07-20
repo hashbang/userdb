@@ -101,8 +101,8 @@ grant select on table v1."aux_groups" to "api-anon";
 
 create view v1.ssh_public_key as
     select
-        fingerprint,
-        base64_fingerprint,
+        encode(fingerprint, 'hex') as fingerprint,
+        encode(fingerprint, 'base64') as base64_fingerprint,
         type,
         key,
         comment,

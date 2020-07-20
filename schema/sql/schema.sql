@@ -25,12 +25,25 @@ create domain username_t text check (
 create type shell as enum (
   '/bin/sh',
   '/bin/bash',
-  '/bin/zsh',
-  '/bin/ksh',
+  '/usr/bin/bash',
+  '/bin/rbash',
+  '/usr/bin/rbash',
   '/bin/dash',
-  '/bin/fish',
-  '/bin/git-shell',
-  '/bin/nologin'
+  '/usr/bin/dash',
+  '/bin/ksh93',
+  '/usr/bin/ksh93',
+  '/bin/rksh93',
+  '/usr/bin/rksh93',
+  '/usr/bin/fish',
+  '/bin/mksh',
+  '/usr/bin/mksh',
+  '/bin/mksh-static',
+  '/usr/lib/klibc/bin/mksh-static',
+  '/bin/zsh',
+  '/usr/bin/zsh',
+  '/bin/tcsh',
+  '/usr/bin/tcsh',
+  '/usr/sbin/nologin'
 );
 
 create table "passwd" (
@@ -41,7 +54,8 @@ create table "passwd" (
   "host" text not null references hosts (name),
   "shell" shell default '/bin/bash',
   "data" jsonb  -- conforms to the user_data.yaml schema
-    check(length(data::text) < 1048576) -- max 1M
+    check(length(data::text) < 1048576), -- max 1M
+  "banned" bool not null default false
 );
 
 alter sequence user_id owned by passwd.uid;
@@ -59,19 +73,25 @@ create table "aux_groups" (
 );
 
 create type ssh_key_type as enum (
+  -- list extracted from sshd(8)
+  'sk-ecdsa-sha2-nistp256@openssh.com',
+  'ecdsa-sha2-nistp256',
+  'ecdsa-sha2-nistp384',
+  'ecdsa-sha2-nistp521',
+  'sk-ssh-ed25519@openssh.com',
+  'ssh-ed25519',
   'ssh-dsa',
   'ssh-rsa',
-  'ssh-ecdsa',
-  'ssh-ed25519',
-  'sk-ecdsa-sha2-nistp256@openssh.com' -- FIDO/U2F
-  -- TODO ED25519 FIDO/U2F keys
+  'ssh-ecdsa', -- not supported, but some users still have this kind of key
+  'ssh-dss' -- not supported, but some users still have this kind of key
 );
 
+create domain ssh_sha256_fingerprint bytea check (length(value) = 32);
+
 create table "ssh_public_key" (
-  "fingerprint" text not null primary key check (length(fingerprint) = 64),
-  "base64_fingerprint" text not null check (length(base64_fingerprint) = 44),
+  "fingerprint" ssh_sha256_fingerprint not null,
   "type" ssh_key_type not null,
-  "key" text unique not null check(length(key) < 1024),
+  "key" text unique not null check(length(key) < 4096),
   "comment" text null check (length(comment) < 100),
   "uid" integer references passwd (uid) on delete cascade
 );
@@ -81,14 +101,10 @@ declare
     key_fp bytea;
 begin
     key_fp = sha256(decode(new.key, 'base64'));
-    if new.fingerprint is not null and new.fingerprint != encode(key_fp, 'hex') then
+    if new.fingerprint is not null and new.fingerprint != key_fp then
         raise exception 'fingerprint does not match expected key';
     end if;
-    if new.base64_fingerprint is not null then
-        raise exception 'base64_fingerprint should not be null on insert/update';
-    end if;
-    new.fingerprint = encode(key_fp, 'hex');
-    new.base64_fingerprint = encode(key_fp, 'base64');
+    new.fingerprint = key_fp;
     return new;
 end;
 $$ language plpgsql;

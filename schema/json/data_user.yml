@@ -1,0 +1,7 @@
+$schema: http://json-schema.org/schema#
+title: "#! userdb -- Schema for user records auxiliary data"
+type: object
+properties:
+  name:
+    type: string
+    description: "User's name (GECOS)"

@@ -17,7 +17,7 @@ DECLARE user_pass  text;
 DECLARE user_shell text;
 DECLARE user_gecos text;
 BEGIN
-    SELECT "name", '!', "data"->>'name', '/home/' || "name", "data"->>'shell', uid, uid
+    SELECT "name", '!', "data"->>'name', '/home/' || "name", "shell", uid, uid
       FROM passwd
      WHERE name = 'testadmin'
       INTO user_name, user_pass, user_gecos, user_home, user_shell, user_uid, user_gid;
@@ -34,7 +34,7 @@ BEGIN
     SELECT * FROM assert.is_equal(user_home, '/home/testadmin') INTO message, result;
     IF result = false THEN RETURN message; END IF;
 
-    SELECT * FROM assert.is_equal(user_shell, '/usr/bin/zsh') INTO message, result;
+    SELECT * FROM assert.is_equal(user_shell, '/bin/zsh') INTO message, result;
     IF result = false THEN RETURN message; END IF;
 
     SELECT * FROM assert.is_equal(user_uid, user_gid) INTO message, result;
@@ -63,7 +63,7 @@ BEGIN
       INTO user_uid;
 
     -- Query for getpwuid
-    SELECT "name", '!', "data"->>'name', '/home/' || "name", "data"->>'shell', uid, uid
+    SELECT "name", '!', "data"->>'name', '/home/' || "name", "shell", uid, uid
       FROM passwd
      WHERE uid = user_uid
       INTO user_name, user_pass, user_gecos, user_home, user_shell, user_uid, user_gid;
@@ -80,7 +80,7 @@ BEGIN
     SELECT * FROM assert.is_equal(user_home, '/home/testadmin') INTO message, result;
     IF result = false THEN RETURN message; END IF;
 
-    SELECT * FROM assert.is_equal(user_shell, '/usr/bin/zsh') INTO message, result;
+    SELECT * FROM assert.is_equal(user_shell, '/bin/zsh') INTO message, result;
     IF result = false THEN RETURN message; END IF;
 
     SELECT * FROM assert.is_equal(user_uid, user_gid) INTO message, result;

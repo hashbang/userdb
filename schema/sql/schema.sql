@@ -22,6 +22,30 @@ create domain username_t text check (
   value ~ '^[a-z][a-z0-9]{0,30}$'
 );
 
+create type shell as enum (
+  '/bin/sh',
+  '/bin/bash',
+  '/usr/bin/bash',
+  '/bin/rbash',
+  '/usr/bin/rbash',
+  '/bin/dash',
+  '/usr/bin/dash',
+  '/bin/ksh93',
+  '/usr/bin/ksh93',
+  '/bin/rksh93',
+  '/usr/bin/rksh93',
+  '/usr/bin/fish',
+  '/bin/mksh',
+  '/usr/bin/mksh',
+  '/bin/mksh-static',
+  '/usr/lib/klibc/bin/mksh-static',
+  '/bin/zsh',
+  '/usr/bin/zsh',
+  '/bin/tcsh',
+  '/usr/bin/tcsh',
+  '/usr/sbin/nologin'
+);
+
 create table "passwd" (
   "uid" integer primary key
     check((uid >= 1000 and uid < 60000) or (uid > 65535 and uid < 4294967294))
@@ -29,8 +53,10 @@ create table "passwd" (
   "name" username_t unique not null,
   "created_at" timestamptz default now(),
   "host" text not null references hosts (name),
+  "shell" shell default '/bin/bash',
   "data" jsonb  -- conforms to the user_data.yaml schema
-    check(length(data::text) < 1048576) -- max 1M
+    check(length(data::text) < 1048576), -- max 1M
+  "banned" bool not null default false
 );
 
 alter sequence user_id owned by passwd.uid;
@@ -46,6 +72,46 @@ create table "aux_groups" (
   "gid" int4 not null references "group" (gid) on delete cascade,
   primary key ("uid", "gid")
 );
+
+create type ssh_key_type as enum (
+  -- list extracted from sshd(8)
+  'sk-ecdsa-sha2-nistp256@openssh.com',
+  'ecdsa-sha2-nistp256',
+  'ecdsa-sha2-nistp384',
+  'ecdsa-sha2-nistp521',
+  'sk-ssh-ed25519@openssh.com',
+  'ssh-ed25519',
+  'ssh-dsa',
+  'ssh-rsa',
+  'ssh-ecdsa', -- not supported, but some users still have this kind of key
+  'ssh-dss' -- not supported, but some users still have this kind of key
+);
+
+create domain ssh_sha256_fingerprint bytea check (length(value) = 32);
+
+create table "ssh_public_key" (
+  "fingerprint" ssh_sha256_fingerprint not null,
+  "type" ssh_key_type not null,
+  "key" text unique not null check(length(key) < 4096),
+  "comment" text null check (length(comment) < 100),
+  "uid" integer references passwd (uid) on delete cascade
+);
+
+create function ssh_public_key_hash() returns trigger as $$
+declare
+    key_fp bytea;
+begin
+    key_fp = sha256(decode(new.key, 'base64'));
+    if new.fingerprint is not null and new.fingerprint != key_fp then
+        raise exception 'fingerprint does not match expected key';
+    end if;
+    new.fingerprint = key_fp;
+    return new;
+end;
+$$ language plpgsql;
+create trigger ssh_public_key_update
+before insert or update of key, fingerprint on ssh_public_key
+for each row execute procedure ssh_public_key_hash();
 
 -- prevent creation/update of a user/host if the number of users
 -- in the group 'users' that have that host

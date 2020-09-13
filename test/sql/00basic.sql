@@ -58,8 +58,8 @@ DECLARE message test_result;
 DECLARE result boolean;
 DECLARE passwd_name text;
 BEGIN
-    insert into passwd (name, host, "data") values ('testuser', 'testbox.hashbang.sh', '{"ssh_keys": [], "shell": "/sbin/nologin"}'::jsonb);
-    insert into passwd (name, host, "data") values ('testuser2', 'testbox.hashbang.sh', '{"ssh_keys": [], "shell": "/bin/sh"}'::jsonb) returning name INTO passwd_name;
+    insert into passwd (name, host, shell) values ('testuser', 'testbox.hashbang.sh', '/usr/sbin/nologin');
+    insert into passwd (name, host, shell) values ('testuser2', 'testbox.hashbang.sh', '/bin/sh') returning name INTO passwd_name;
     SELECT * FROM assert.is_equal(passwd_name,'testuser2') INTO message, result;
     IF result = false THEN RETURN message; END IF;
 
@@ -74,9 +74,8 @@ DECLARE message test_result;
 DECLARE result boolean;
 DECLARE passwd_name text;
 BEGIN
-    insert into passwd (name, host, "data")
-    values ('testadmin', 'fo0.hashbang.sh',
-    '{ "name":"Just an admin.", "ssh_keys": [], "shell": "/usr/bin/zsh" }'::jsonb)
+    insert into passwd (name, host, shell, data)
+    values ('testadmin', 'fo0.hashbang.sh', '/bin/zsh', '{"name": "Just an admin."}')
     RETURNING uid INTO user_id;
 
     insert into aux_groups (uid, gid) values (user_id, 27); -- 27 is sudo
@@ -87,6 +86,38 @@ BEGIN
     USING (uid) WHERE (gid = 27)
     INTO passwd_name;
     SELECT * FROM assert.is_equal(passwd_name,'testadmin') INTO message, result;
+    IF result = false THEN RETURN message; END IF;
+
+    RETURN assert.ok('End of test.');
+END $$ LANGUAGE plpgsql;
+
+CREATE FUNCTION unit_tests.add_public_key_to_user()
+RETURNS test_result AS $$
+DECLARE testbox integer;
+DECLARE key_fingerprint text;
+DECLARE user_id integer;
+DECLARE message test_result;
+DECLARE result boolean;
+DECLARE passwd_name text;
+BEGIN
+    select "uid" from passwd where name = 'testuser' into user_id;
+
+    insert into ssh_public_key (type, key, comment, uid)
+    values (
+        'ssh-ed25519',
+        'AAAAC3NzaC1lZDI1NTE5AAAAIKCXEbRyTwfQLhxpt9TMlpZSSGXNwnGmFdpV+yiljd4g',
+        'Some key',
+        user_id
+    );
+
+    SELECT "fingerprint"
+    FROM passwd JOIN ssh_public_key
+    USING (uid) WHERE (name = 'testuser')
+    INTO key_fingerprint;
+    SELECT * FROM assert.is_equal(
+        key_fingerprint,
+	'\xa464a5d8f04368c85a46216a422553c39177396ca23e0d2e44c819da9dc57c2d'
+    ) INTO message, result;
     IF result = false THEN RETURN message; END IF;
 
     RETURN assert.ok('End of test.');

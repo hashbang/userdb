@@ -10,7 +10,7 @@
 [postgresql-badge]: https://img.shields.io/badge/postgresql-9.4-blue.svg
 [postgresql]: https://www.postgresql.org/docs/9.4/static/index.html
 [irc-badge]: https://img.shields.io/badge/irc-%23%21%20on%20hashbang-blue.svg
-[irc]: https://chat.hashbang.sh/
+[irc]: https://webirc.hashbang.sh/
 [travis-badge]: https://travis-ci.org/hashbang/userdb.svg?branch=master
 [travis-status]: https://travis-ci.org/hashbang/userdb
 [license-badge]: https://img.shields.io/github/license/hashbang/userdb.svg

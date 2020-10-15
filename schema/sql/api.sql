@@ -1,4 +1,6 @@
 -- -*- mode: sql; sql-product: postgres -*-
+create schema pgcrypto;
+create extension if not exists pgcrypto schema pgcrypto;
 
 create user "api" noinherit;
 comment on role api is
@@ -11,7 +13,8 @@ grant select,insert,update,delete on table
     public."passwd",
     public."aux_groups",
     public."group",
-    public."ssh_public_key"
+    public."ssh_public_key",
+    public."openpgp_public_key"
 to "api";
 
 create role "api-anon";
@@ -124,6 +127,40 @@ comment on column v1.ssh_public_key.uid is
     $$User ID the key is currently linked to$$;
 alter view v1."ssh_public_key" owner to api;
 grant select on table v1."ssh_public_key" to "api-anon";
+
+-- PGP Key
+create view v1.openpgp_public_key as
+  select
+      uid,
+      pgcrypto.dearmor(ascii_armoured_public_key) as key,
+      ascii_armoured_public_key
+  from public.openpgp_public_key;
+comment on view v1.openpgp_public_key is
+    $$PGP public keys for users$$;
+comment on column v1.openpgp_public_key.key is
+    $$PGP public key$$;
+comment on column v1.openpgp_public_key.ascii_armoured_public_key is
+    $$ASCII armoured PGP key$$;
+comment on column v1.openpgp_public_key.uid is
+    $$User ID the key is currently linked to$$;
+grant insert("uid", "ascii_armoured_public_key") on table v1."openpgp_public_key" to "api-user-create";
+
+create function insert_pgp_key() returns trigger as $$
+begin
+  insert into public.openpgp_public_key (uid, ascii_armoured_public_key)
+    values (new.uid, new.ascii_armoured_public_key);
+  return new;
+end
+$$ language plpgsql security definer;
+
+create trigger insert_pgp_key
+    instead of insert on v1.openpgp_public_key
+    for each row
+    execute procedure insert_pgp_key();
+
+alter view v1."openpgp_public_key" owner to api;
+grant select on table v1."openpgp_public_key" to "api-anon";
+
 
 -- User signup
 create view v1.signup as

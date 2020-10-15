@@ -97,6 +97,11 @@ create table "ssh_public_key" (
   "uid" integer references passwd (uid) on delete cascade
 );
 
+create table "openpgp_public_key" (
+  "uid" integer references passwd (uid) on delete cascade,
+  "ascii_armoured_public_key" text
+);
+
 create function ssh_public_key_hash() returns trigger as $$
 declare
     key_fp bytea;

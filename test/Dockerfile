@@ -4,15 +4,16 @@ RUN adduser admin && \
     apt-get clean && \
     apt-get update && \
     apt-get install -y --force-yes \
-        sudo \
-        bats \
         curl \
         nano \
+        postgresql-client \
+        python3-jwt \
+        python3-psycopg2 \
+        python3-requests \
+        sudo \
         vim-nox \
-        postgresql-client &&\
+        &&\
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
-
-ADD . /home/admin/
 
 RUN \
     chown -R admin:admin /home/admin && \
@@ -27,5 +28,7 @@ ENV LANG=C.UTF-8 \
     TERM=xterm-256color \
     USER="admin" \
     HOME="/home/admin"
+
+COPY --chown=admin:admin . /home/admin/
 
 CMD ["/bin/bash", "/home/admin/test.sh"]

@@ -34,4 +34,10 @@ run ${psql} -c "\
 	END TRANSACTION; \
 "
 
-run bats bats/test.bats
+until curl --fail --silent http://userdb-postgrest:3000/passwd > /dev/null; do
+  echo "Waiting for Postgrest to be live..."
+  sleep 5
+done
+
+cd integration
+run python3 -m unittest discover -v

@@ -16,21 +16,40 @@ help:
 	@echo "docker-test-build - build test container"
 	@echo "docker-test-shell - run shell from a test container"
 
+out/json-schemas.sql: schema/sql/json-schemas.sql
+	mkdir -p $(@D)
+	./scripts/build schema < "$<" > "$@"
+
 .PHONY: build
-build: clean fetch
-	./scripts/build schema/ out/
+build: out/json-schemas.sql
+
+schema/ext/json-schema/%:
+	git submodule update --init --recursive $(@D)
+
+test/sql/plpgunit/%:
+	git submodule update --init --recursive $(@D)
 
 .PHONY: fetch
-fetch:
-	git submodule update --init --recursive
+fetch: schema/ext/json-schema/ test/sql/plpgunit/
 
 .PHONY: fetch-latest
 fetch-latest:
 	git submodule foreach 'git checkout master && git pull'
 
+SCHEMA_FILES := \
+	schema/sql/schema.sql \
+	schema/sql/access.sql \
+	schema/sql/api.sql \
+	schema/sql/metrics.sql \
+	schema/sql/nss.sql \
+	schema/sql/reserved.sql \
+	schema/sql/stats.sql \
+	schema/ext/json-schema/postgres-json-schema--0.1.0.sql \
+	out/json-schemas.sql
+
 .PHONY: install
-install:
-	$(foreach file,$(wildcard out/*.sql),psql -v ON_ERROR_STOP=1 -f $(file);)
+install: $(SCHEMA_FILES)
+	psql -v ON_ERROR_STOP=1 $(foreach file,$(SCHEMA_FILES),-f $(file));
 
 .PHONY: develop
 develop:

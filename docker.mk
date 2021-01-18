@@ -1,4 +1,6 @@
 NAMESPACE ?= userdb
+POSTGRES_USER ?= postgres
+POSTGRES_DB ?= postgres
 IMAGE_POSTGRES ?= postgres:latest
 IMAGE_POSTGREST ?= postgrest/postgrest:v7.0.1@sha256:2a10713acc388f9a64320443e949eb87a0424ab280e68c4ed4a6d0653c001586
 
@@ -23,6 +25,8 @@ docker-start:
 		--detach=true \
 		--name=$(NAMESPACE)-postgres \
 		--network=$(NAMESPACE) \
+		--env POSTGRES_DB=$(POSTGRES_DB) \
+		--env POSTGRES_USER=$(POSTGRES_USER) \
 		--env POSTGRES_PASSWORD=test_password \
 		-p 5432:5432 \
 		$(IMAGE_POSTGRES)
@@ -31,7 +35,8 @@ docker-start:
 		--rm \
 		--network=$(NAMESPACE) \
 		--env PGHOST=$(NAMESPACE)-postgres \
-		--env PGUSER=postgres \
+		--env PGDATABASE=$(POSTGRES_DB) \
+		--env PGUSER=$(POSTGRES_USER) \
 		--env PGPASSWORD=test_password \
 		$(IMAGE_POSTGRES) sh -c 'until pg_isready; do sleep 1; done'
 	# Load schema
@@ -40,7 +45,8 @@ docker-start:
 			--rm \
 			--network=$(NAMESPACE) \
 			--env PGHOST=$(NAMESPACE)-postgres \
-			--env PGUSER=postgres \
+			--env PGDATABASE=$(POSTGRES_DB) \
+			--env PGUSER=$(POSTGRES_USER) \
 			--env PGPASSWORD=test_password \
 			-v `pwd`:`pwd` \
 			-w `pwd` \
@@ -53,10 +59,11 @@ docker-start:
 		--detach=true \
 		--name $(NAMESPACE)-postgrest \
 		--network=$(NAMESPACE) \
-		--env PGRST_DB_URI="postgres://postgres:test_password@$(NAMESPACE)-postgres/userdb" \
-  		--env PGRST_DB_SCHEMA="v1" \
-  		--env PGRST_DB_ANON_ROLE="api-anon" \
-  		--env PGRST_JWT_SECRET="a_test_only_postgrest_jwt_secret" \
+		--env PGRST_DB_URI="postgres://$(POSTGRES_USER):test_password@$(NAMESPACE)-postgres/$(POSTGRES_DB)" \
+		--env PGRST_DB_SCHEMA="v1" \
+		--env PGRST_DB_ANON_ROLE="api-anon" \
+		--env PGRST_JWT_SECRET="a_test_only_postgrest_jwt_secret" \
+		-p 3000:3000 \
 		$(IMAGE_POSTGREST)
 
 .PHONY: docker-stop
@@ -79,7 +86,8 @@ docker-test: docker-stop docker-start docker-test-build
 		--name $(NAMESPACE)-test \
 		--network=$(NAMESPACE) \
 		--env PGHOST=$(NAMESPACE)-postgres \
-		--env PGUSER=postgres \
+		--env PGDATABASE=$(POSTGRES_DB) \
+		--env PGUSER=$(POSTGRES_USER) \
 		--env PGPASSWORD=test_password \
 		local/$(NAMESPACE)-test
 
@@ -92,7 +100,8 @@ docker-test-shell: docker-stop docker-start docker-test-build
 		--name $(NAMESPACE)-test-shell \
 		--network=$(NAMESPACE) \
 		--env PGHOST=$(NAMESPACE)-postgres \
-		--env PGUSER=postgres \
+		--env PGDATABASE=$(POSTGRES_DB) \
+		--env PGUSER=$(POSTGRES_USER) \
 		--env PGPASSWORD=test_password \
 		local/$(NAMESPACE)-test \
 		bash

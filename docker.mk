@@ -21,8 +21,7 @@ docker-start:
 	docker network inspect $(NAMESPACE) \
 	|| docker network create $(NAMESPACE)
 	# Start database
-	docker inspect -f '{{.State.Running}}' $(NAMESPACE)-postgres 2>/dev/null \
-	|| docker run  \
+	docker run \
 		--detach=true \
 		--name=$(NAMESPACE)-postgres \
 		--network=$(NAMESPACE) \
@@ -54,8 +53,7 @@ docker-start:
 			$(IMAGE_POSTGRES) psql" \
 		install
 	# Start web API
-	docker inspect -f '{{.State.Running}}' $(NAMESPACE)-postgrest 2>/dev/null \
-	|| docker run \
+	docker run \
 		--rm \
 		--detach=true \
 		--name $(NAMESPACE)-postgrest \

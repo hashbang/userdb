@@ -1,5 +1,6 @@
 include docker.mk
 
+PG_DUMP ?= pg_dump
 PSQL ?= psql
 
 .PHONY: help
@@ -48,6 +49,9 @@ SCHEMA_FILES := \
 .PHONY: install
 install: $(SCHEMA_FILES)
 	$(PSQL) -v ON_ERROR_STOP=1 $(foreach file,$(SCHEMA_FILES),-f $(file));
+
+schema-dump.psql:
+	$(PG_DUMP) -s > $@
 
 .PHONY: test
 test: \

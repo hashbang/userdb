@@ -6,11 +6,12 @@ IMAGE_POSTGREST ?= postgrest/postgrest:v7.0.1@sha256:2a10713acc388f9a64320443e94
 
 .PHONY: docker-help
 docker-help:
-	@echo "docker-start      - Start service containers"
-	@echo "docker-stop       - Stop service containers"
-	@echo "docker-test       - run tests from a predictable test container"
-	@echo "docker-test-build - build test container"
-	@echo "docker-test-shell - run shell from a test container"
+	@echo "docker-start       - Start service containers"
+	@echo "docker-stop        - Stop service containers"
+	@echo "docker-test        - run tests from a predictable test container"
+	@echo "docker-test-build  - build test container"
+	@echo "docker-test-shell  - run shell from a test container"
+	@echo "docker-schema-dump - dump the schema of the database running in docker"
 
 .PHONY: docker-restart
 docker-restart: docker-stop docker-start
@@ -76,6 +77,19 @@ docker-stop:
 .PHONY: docker-log
 docker-log:
 	docker logs -f $(NAMESPACE)-postgres
+
+.PHONY: docker-schema-dump
+docker-schema-dump:
+	$(MAKE) -f Makefile \
+		PG_DUMP="docker run \
+			--rm \
+			--network=$(NAMESPACE) \
+			--env PGHOST=$(NAMESPACE)-postgres \
+			--env PGDATABASE=$(POSTGRES_DB) \
+			--env PGUSER=$(POSTGRES_USER) \
+			--env PGPASSWORD=test_password \
+			$(IMAGE_POSTGRES) pg_dump" \
+		schema-dump.psql
 
 .PHONY: docker-test
 docker-test: docker-stop docker-start docker-test-build

@@ -90,11 +90,11 @@ create type ssh_key_type as enum (
 create domain ssh_sha256_fingerprint bytea check (length(value) = 32);
 
 create table "ssh_public_key" (
+  "uid" integer not null references passwd (uid) on delete cascade,
   "fingerprint" ssh_sha256_fingerprint not null,
   "type" ssh_key_type not null,
   "key" text unique not null check(length(key) < 4096),
-  "comment" text null check (length(comment) < 100),
-  "uid" integer references passwd (uid) on delete cascade
+  "comment" text null check (length(comment) < 100)
 );
 
 create table "openpgp_public_key" (

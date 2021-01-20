@@ -4,6 +4,3 @@
 [submodule "postgres-json-schema"]
 	path = schema/ext/json-schema
 	url = https://github.com/gavinwahl/postgres-json-schema.git
-[submodule "modules/postgrest"]
-	path = modules/postgrest
-	url = https://git@github.com/PostgREST/postgrest

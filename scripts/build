@@ -1,40 +1,14 @@
 #!/usr/bin/env python3
-import string, yaml, json, sys, os, shutil
-from glob import glob
+import string, yaml, json, sys, os
 
 in_dir = sys.argv[1]
-out_dir = sys.argv[2]
-sql_names = [
-    'schema',
-    'stats',
-    'reserved',
-    'nss',
-    'api',
-    'access',
-]
 
-if not os.path.exists(out_dir): os.makedirs(out_dir)
+data = sys.stdin.read()
 
-order = 1
-shutil.copyfile(
-    glob('{}/ext/json-schema/postgres*--*.sql'.format(in_dir))[0],
-    '{}/{}-json-schemas-base.sql'.format(out_dir, order)
-)
-
-for each in sql_names:
-    order += 1
-    shutil.copyfile(
-        '{}/sql/{}.sql'.format(in_dir, each),
-        '{}/{}-{}.sql'.format(out_dir, order, each)
-    )
-
-order += 1
-with open('{}/sql/json-schemas.sql'.format(in_dir), 'r') as in_file:
-    data = in_file.read()
-for name in ('user', 'host'):
-    with open("{}/json/data_%s.yml".format(in_dir) % name, 'r') as schema:
+for name in ("user", "host"):
+    with open("{}/json/data_%s.yml".format(in_dir) % name, "r") as schema:
         json_data = json.dumps(yaml.safe_load(schema), indent=4)
-        assert("$$" not in json_data)
-        data = data.replace('{data_%s}' % name, json_data)
-with open('{}/{}-json-schemas.sql'.format(out_dir, order), 'w') as outfile:
-    outfile.write(data)
+        assert "$$" not in json_data
+        data = data.replace("{data_%s}" % name, json_data)
+
+sys.stdout.write(data)

@@ -1,2 +1,3 @@
 .*
 out/*
+/schema-dump.psql

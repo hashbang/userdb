@@ -123,4 +123,3 @@ docker-test-shell: docker-stop docker-start docker-test-build
 .PHONY: docker-test-build
 docker-test-build:
 	docker build -t local/$(NAMESPACE)-test test/
-

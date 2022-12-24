@@ -127,3 +127,71 @@ load test_helper
 	run curl http://userdb-postgrest:3000/passwd?name=eq.testuser43
 	echo "$output" | grep "test2.hashbang.sh"
 }
+
+@test "Can not update user with a JWT with an invalid role" {
+
+	run curl http://userdb-postgrest:3000/signup \
+		-H "Content-Type: application/json" \
+		-H "Authorization: Bearer $(jwt_token 'api-user-create')" \
+		-X POST \
+		--data-binary @- <<-EOF
+			{
+				"name": "testuser43",
+				"host": "test.hashbang.sh",
+				"shell": "/bin/zsh",
+				"keys": ["$(cat bats/keys/id_ed25519.pub)"]
+			}
+			EOF
+	[ "$status" -eq 0 ]
+
+	run curl http://userdb-postgrest:3000/passwd?name=eq.testuser43
+	echo "$output" | grep "test.hashbang.sh"
+
+	run curl http://userdb-postgrest:3000/passwd?name=eq.testuser43 \
+		-H "Content-Type: application/json" \
+		-H "Authorization: Bearer $(jwt_token 'api-derp')" \
+		-X PATCH \
+		--data-binary @- <<-EOF
+			{
+				"host": "test2.hashbang.sh"
+			}
+			EOF
+	echo "$output" | grep "does not exist"
+
+	run curl http://userdb-postgrest:3000/passwd?name=eq.testuser43
+	echo "$output" | grep "test.hashbang.sh"
+}
+
+@test "Can not update user with a JWT with the wrong role" {
+
+	run curl http://userdb-postgrest:3000/signup \
+		-H "Content-Type: application/json" \
+		-H "Authorization: Bearer $(jwt_token 'api-user-create')" \
+		-X POST \
+		--data-binary @- <<-EOF
+			{
+				"name": "testuser43",
+				"host": "test.hashbang.sh",
+				"shell": "/bin/zsh",
+				"keys": ["$(cat bats/keys/id_ed25519.pub)"]
+			}
+			EOF
+	[ "$status" -eq 0 ]
+
+	run curl http://userdb-postgrest:3000/passwd?name=eq.testuser43
+	echo "$output" | grep "test.hashbang.sh"
+
+	run curl http://userdb-postgrest:3000/passwd?name=eq.testuser43 \
+		-H "Content-Type: application/json" \
+		-H "Authorization: Bearer $(jwt_token 'api-anon')" \
+		-X PATCH \
+		--data-binary @- <<-EOF
+			{
+				"host": "test2.hashbang.sh"
+			}
+			EOF
+	echo "$output" | grep "permission denied"
+
+	run curl http://userdb-postgrest:3000/passwd?name=eq.testuser43
+	echo "$output" | grep "test.hashbang.sh"
+}

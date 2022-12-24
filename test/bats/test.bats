@@ -119,7 +119,7 @@ load test_helper
 		-X PATCH \
 		--data-binary @- <<-EOF
 			{
-				"host": "test2.hashbang.sh",
+				"host": "test2.hashbang.sh"
 			}
 			EOF
 	[ "$status" -eq 0 ]

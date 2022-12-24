@@ -40,6 +40,7 @@ grant select,insert,update on table
     public."ssh_public_key",
     public."openpgp_public_key"
 to "api-user-manage";
+grant "api-user-manage" to "api";
 
 create schema v1;
 grant create,usage on schema v1 to api;

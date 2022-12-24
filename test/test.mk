@@ -1,7 +1,7 @@
 NAMESPACE ?= userdb
 POSTGRES_USER ?= postgres
 POSTGRES_DB ?= postgres
-IMAGE_POSTGRES ?= postgres:latest
+IMAGE_POSTGRES ?= postgres@sha256:3657548977d593c9ab6d70d1ffc43ceb3b5164ae07ac0f542d2ea139664eb6b3
 IMAGE_POSTGREST ?= postgrest/postgrest:v7.0.1@sha256:2a10713acc388f9a64320443e949eb87a0424ab280e68c4ed4a6d0653c001586
 
 .PHONY: docker-help
@@ -21,7 +21,8 @@ docker-start:
 	docker network inspect $(NAMESPACE) \
 	|| docker network create $(NAMESPACE)
 	# Start database
-	docker run \
+	docker inspect -f '{{.State.Running}}' $(NAMESPACE)-postgres 2>/dev/null \
+	|| docker run \
 		--detach=true \
 		--name=$(NAMESPACE)-postgres \
 		--network=$(NAMESPACE) \
@@ -53,7 +54,8 @@ docker-start:
 			$(IMAGE_POSTGRES) psql" \
 		install
 	# Start web API
-	docker run \
+	docker inspect -f '{{.State.Running}}' $(NAMESPACE)-postgrest 2>/dev/null \
+	|| docker run \
 		--rm \
 		--detach=true \
 		--name $(NAMESPACE)-postgrest \
@@ -121,3 +123,4 @@ docker-test-shell: docker-stop docker-start docker-test-build
 .PHONY: docker-test-build
 docker-test-build:
 	docker build -t local/$(NAMESPACE)-test test/
+

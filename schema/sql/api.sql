@@ -31,6 +31,17 @@ grant usage on sequence "user_id" to "api-user-create";
 grant "api-user-create" to "api";
 grant "api-anon" to "api-user-create";
 
+create role "api-user-update";
+comment on role "api-user-update" is
+    $$Intended for use with user self-management systems$$;
+grant usage on sequence "user_id" to "api-user-create";
+grant select,insert,update,delete on table
+    public."hosts",
+    public."passwd",
+    public."ssh_public_key",
+    public."openpgp_public_key"
+to "api-user-update";
+
 create schema v1;
 grant create,usage on schema v1 to api;
 grant usage on schema v1 to "api-anon";

@@ -115,7 +115,7 @@ load test_helper
 
 	run curl http://userdb-postgrest:3000/passwd?name=eq.testuser43 \
 		-H "Content-Type: application/json" \
-		-H "Authorization: Bearer $(jwt_token 'api')" \
+		-H "Authorization: Bearer $(jwt_token 'api-user-manage')" \
 		-X PATCH \
 		--data-binary @- <<-EOF
 			{

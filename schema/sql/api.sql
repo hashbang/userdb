@@ -31,16 +31,15 @@ grant usage on sequence "user_id" to "api-user-create";
 grant "api-user-create" to "api";
 grant "api-anon" to "api-user-create";
 
-create role "api-user-update";
-comment on role "api-user-update" is
-    $$Intended for use with user self-management systems$$;
-grant usage on sequence "user_id" to "api-user-create";
-grant select,insert,update,delete on table
-    public."hosts",
+create role "api-user-manage";
+comment on role "api-user-manage" is
+    $$Intended for use with user management systems$$;
+grant usage on sequence "user_id" to "api-user-manage";
+grant select,insert,update on table
     public."passwd",
     public."ssh_public_key",
     public."openpgp_public_key"
-to "api-user-update";
+to "api-user-manage";
 
 create schema v1;
 grant create,usage on schema v1 to api;

@@ -46,7 +46,7 @@ to "api-user-manage";
 create schema v1;
 grant create,usage on schema v1 to api;
 grant usage on schema v1 to "api-anon";
-grant create,usage on schema v1 to "api-user-manage";
+grant usage on schema v1 to "api-user-manage";
 
 create view v1.hosts as
     select

@@ -142,7 +142,7 @@ comment on column v1.ssh_public_key.uid is
     $$User ID the key is currently linked to$$;
 alter view v1."ssh_public_key" owner to api;
 grant select on table v1."ssh_public_key" to "api-anon";
-grant update,insert on table v1."ssh_public_key" to "api-user-manage";
+grant update,delete,insert on table v1."ssh_public_key" to "api-user-manage";
 
 -- PGP Key
 create view v1.openpgp_public_key as

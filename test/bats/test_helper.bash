@@ -2,6 +2,7 @@
 
 setup(){
     psql -c "insert into hosts (name,maxusers) values ('test.hashbang.sh','500');";
+    psql -c "insert into hosts (name,maxusers) values ('test2.hashbang.sh','500');";
 }
 
 teardown(){

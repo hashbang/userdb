@@ -1,7 +1,17 @@
-include docker.mk
+include test/test.mk
 
 PG_DUMP ?= pg_dump
 PSQL ?= psql
+SCHEMA_FILES := \
+	schema/sql/schema.sql \
+	schema/sql/access.sql \
+	schema/sql/api.sql \
+	schema/sql/metrics.sql \
+	schema/sql/nss.sql \
+	schema/sql/reserved.sql \
+	schema/sql/stats.sql \
+	schema/ext/json-schema/postgres-json-schema--0.1.0.sql \
+	out/json-schemas.sql
 
 .PHONY: help
 help:
@@ -15,18 +25,8 @@ help:
 	@echo ""
 	@$(MAKE) -s docker-help
 
-out/json-schemas.sql: schema/sql/json-schemas.sql
-	mkdir -p $(@D)
-	./scripts/build schema < "$<" > "$@"
-
 .PHONY: build
 build: out/json-schemas.sql
-
-schema/ext/json-schema/%:
-	git submodule update --init --recursive $(@D)
-
-test/sql/plpgunit/%:
-	git submodule update --init --recursive $(@D)
 
 .PHONY: fetch
 fetch: schema/ext/json-schema/ test/sql/plpgunit/
@@ -35,23 +35,9 @@ fetch: schema/ext/json-schema/ test/sql/plpgunit/
 fetch-latest:
 	git submodule foreach 'git checkout master && git pull'
 
-SCHEMA_FILES := \
-	schema/sql/schema.sql \
-	schema/sql/access.sql \
-	schema/sql/api.sql \
-	schema/sql/metrics.sql \
-	schema/sql/nss.sql \
-	schema/sql/reserved.sql \
-	schema/sql/stats.sql \
-	schema/ext/json-schema/postgres-json-schema--0.1.0.sql \
-	out/json-schemas.sql
-
 .PHONY: install
 install: $(SCHEMA_FILES)
 	$(PSQL) -v ON_ERROR_STOP=1 $(foreach file,$(SCHEMA_FILES),-f $(file));
-
-schema-dump.psql:
-	$(PG_DUMP) -s > $@
 
 .PHONY: test
 test: \
@@ -70,3 +56,16 @@ test-shell: \
 .PHONY: clean
 clean:
 	rm -rf out
+
+out/json-schemas.sql: schema/sql/json-schemas.sql
+	mkdir -p $(@D)
+	./scripts/build schema < "$<" > "$@"
+
+out/schema-dump.psql:
+	$(PG_DUMP) -s > $@
+
+schema/ext/json-schema/%:
+	git submodule update --init --recursive $(@D)
+
+test/sql/plpgunit/%:
+	git submodule update --init --recursive $(@D)

@@ -31,9 +31,17 @@ grant usage on sequence "user_id" to "api-user-create";
 grant "api-user-create" to "api";
 grant "api-anon" to "api-user-create";
 
+create role "api-user-manage";
+comment on role "api-user-manage" is
+    $$Intended for use with user management systems$$;
+grant usage on sequence "user_id" to "api-user-manage";
+grant "api-user-manage" to "api";
+grant "api-anon" to "api-user-manage";
+
 create schema v1;
 grant create,usage on schema v1 to api;
 grant usage on schema v1 to "api-anon";
+grant usage on schema v1 to "api-user-manage";
 
 create view v1.hosts as
     select
@@ -73,6 +81,8 @@ comment on column v1.passwd.data is
 alter view v1."passwd" owner to api;
 grant select on table v1."passwd" to "api-anon";
 grant insert("name","host","data") on table v1."passwd" to "api-user-create";
+grant insert("name","host","data") on table v1."passwd" to "api-user-manage";
+grant update("host","data") on table v1."passwd" to "api-user-manage";
 
 create view v1."group" as
     select
@@ -127,6 +137,7 @@ comment on column v1.ssh_public_key.uid is
     $$User ID the key is currently linked to$$;
 alter view v1."ssh_public_key" owner to api;
 grant select on table v1."ssh_public_key" to "api-anon";
+grant update,delete,insert on table v1."ssh_public_key" to "api-user-manage";
 
 -- PGP Key
 create view v1.openpgp_public_key as
@@ -144,6 +155,7 @@ comment on column v1.openpgp_public_key.ascii_armoured_public_key is
 comment on column v1.openpgp_public_key.uid is
     $$User ID the key is currently linked to$$;
 grant insert("uid", "ascii_armoured_public_key") on table v1."openpgp_public_key" to "api-user-create";
+grant update("uid", "ascii_armoured_public_key") on table v1."openpgp_public_key" to "api-user-manage";
 
 create function insert_pgp_key() returns trigger as $$
 begin
@@ -216,3 +228,4 @@ create trigger signup
 alter view v1."signup" owner to api;
 grant select on table v1."signup" to "api-anon";
 grant insert("name", "host", "shell", "keys") on table v1."signup" to "api-user-create";
+grant insert("name", "host", "shell", "keys") on table v1."signup" to "api-user-manage";

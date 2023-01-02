@@ -37,11 +37,6 @@ comment on role "api-user-manage" is
 grant usage on sequence "user_id" to "api-user-manage";
 grant "api-user-manage" to "api";
 grant "api-anon" to "api-user-manage";
-grant select,insert,update on table
-    public."passwd",
-    public."ssh_public_key",
-    public."openpgp_public_key"
-to "api-user-manage";
 
 create schema v1;
 grant create,usage on schema v1 to api;
